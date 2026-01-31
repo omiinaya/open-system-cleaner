@@ -7,21 +7,14 @@ import {
   Search,
   FileSearch,
   Check,
-  AlertCircle,
   Clock,
   HardDrive,
-  Globe,
-  History,
-  FileText,
-  FolderOpen,
-  ChevronRight,
   RotateCcw,
   Sparkles,
 } from 'lucide-react';
-import Card, { CardHeader, CardContent, CardFooter } from '../ui/Card';
+import Card, { CardHeader, CardContent } from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
-import Progress from '../ui/Progress';
 import Switch from '../ui/Switch';
 import { ScanProgress } from '../common';
 
@@ -184,7 +177,6 @@ const CleanModule: React.FC = () => {
   };
   
   const selectedFeatures = features.filter((f) => f.checked);
-  const hasIssues = features.some((f) => f.issues > 0);
   
   return (
     <div className="space-y-6">
