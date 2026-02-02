@@ -173,17 +173,17 @@ ipcMain.handle('optimization:optimizeRAM', async () => {
 });
 
 // Security Operations
-ipcMain.handle('security:scanMalware', async () => {
+ipcMain.handle('security:scanVulnerabilities', async () => {
   // Placeholder: Will be implemented in Phase 2
   return {
-    threats: [],
-    totalThreats: 0,
+    issues: [],
+    totalIssues: 0,
   };
 });
 
-ipcMain.handle('security:enableRealTimeProtection', async (_event, enabled: boolean) => {
+ipcMain.handle('security:enableSystemHardeningMonitor', async (_event, enabled: boolean) => {
   // Placeholder: Will be implemented in Phase 2
-  console.log('Real-time protection:', enabled);
+  console.log('System hardening monitor:', enabled);
   return {
     success: true,
     enabled,

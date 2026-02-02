@@ -21,9 +21,9 @@ const ProtectModule: React.FC = () => {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanComplete, setScanComplete] = useState(false);
   const [currentAction, setCurrentAction] = useState('');
-  const [threatsFound, setThreatsFound] = useState(0);
-  const [securityScore, setSecurityScore] = useState(85);
-  const [realTimeProtection, setRealTimeProtection] = useState(true);
+  const [issuesFound, setIssuesFound] = useState(0);
+  const [hardeningScore, setHardeningScore] = useState(85);
+  const [systemHardeningMonitor, setSystemHardeningMonitor] = useState(true);
   const [firewallEnabled, setFirewallEnabled] = useState(true);
   
   const [protectionFeatures, setProtectionFeatures] = useState<ProtectionFeature[]>([
@@ -43,7 +43,7 @@ const ProtectModule: React.FC = () => {
     setIsScanning(true);
     setScanProgress(0);
     setScanComplete(false);
-    setThreatsFound(0);
+    setIssuesFound(0);
     const actions = ['Initializing scan engine...', 'Scanning memory...', 'Checking startup items...', 'Scanning system files...', 'Analyzing registry...', 'Checking browser extensions...'];
     let progress = 0;
     const interval = setInterval(() => {
@@ -51,11 +51,11 @@ const ProtectModule: React.FC = () => {
       if (progress >= 100) {
         progress = 100;
         clearInterval(interval);
-        const foundThreats = Math.random() > 0.7 ? Math.floor(Math.random() * 3) : 0;
-        setThreatsFound(foundThreats);
+        const foundIssues = Math.random() > 0.7 ? Math.floor(Math.random() * 3) : 0;
+        setIssuesFound(foundIssues);
         setScanComplete(true);
         setIsScanning(false);
-        setSecurityScore(foundThreats > 0 ? 75 : 98);
+        setHardeningScore(foundIssues > 0 ? 75 : 98);
       }
       setScanProgress(progress);
       setCurrentAction(actions[Math.floor((progress / 100) * actions.length)] || 'Completing scan...');
@@ -77,36 +77,36 @@ const ProtectModule: React.FC = () => {
         <CardContent className="relative">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
             <div className="flex-shrink-0">
-              <div className={cn('w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg', securityScore >= 90 ? 'bg-success-500 shadow-success-500/20' : securityScore >= 70 ? 'bg-warning-500 shadow-warning-500/20' : 'bg-danger-500 shadow-danger-500/20')}>
-                {securityScore >= 90 ? <ShieldCheck className="w-10 h-10 text-white" /> : <ShieldAlert className="w-10 h-10 text-white" />}
+              <div className={cn('w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg', hardeningScore >= 90 ? 'bg-success-500 shadow-success-500/20' : hardeningScore >= 70 ? 'bg-warning-500 shadow-warning-500/20' : 'bg-danger-500 shadow-danger-500/20')}>
+                {hardeningScore >= 90 ? <ShieldCheck className="w-10 h-10 text-white" /> : <ShieldAlert className="w-10 h-10 text-white" />}
               </div>
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
                 <h2 className="text-xl font-bold text-text-primary">Security Center</h2>
-                <Badge variant={securityScore >= 90 ? 'success' : securityScore >= 70 ? 'warning' : 'danger'} size="md" dot pulse={securityScore < 90}>
-                  {securityScore >= 90 ? 'Protected' : securityScore >= 70 ? 'At Risk' : 'Critical'}
+                <Badge variant={hardeningScore >= 90 ? 'success' : hardeningScore >= 70 ? 'warning' : 'danger'} size="md" dot pulse={hardeningScore < 90}>
+                  {hardeningScore >= 90 ? 'Protected' : hardeningScore >= 70 ? 'At Risk' : 'Critical'}
                 </Badge>
               </div>
-              <p className="text-text-secondary">Real-time protection is {realTimeProtection ? 'active' : 'disabled'}. {threatsFound > 0 ? ` ${threatsFound} threats found.` : ' No threats detected.'}</p>
+              <p className="text-text-secondary">System hardening monitor is {systemHardeningMonitor ? 'active' : 'disabled'}. {issuesFound > 0 ? ` ${issuesFound} security issues found.` : ' No issues detected.'}</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <span className={cn('text-4xl font-bold', getScoreColor(securityScore))}>{securityScore}</span>
-                <p className="text-xs text-text-secondary">Security Score</p>
+                <span className={cn('text-4xl font-bold', getScoreColor(hardeningScore))}>{hardeningScore}</span>
+                <p className="text-xs text-text-secondary">System Hardening Score</p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
       
-      {isScanning && <ScanProgress isScanning={isScanning} progress={scanProgress} currentAction={currentAction} itemsScanned={Math.floor((scanProgress / 100) * 50000)} totalItems={50000} issuesFound={threatsFound} onCancel={() => setIsScanning(false)} variant="protect" />}
+      {isScanning && <ScanProgress isScanning={isScanning} progress={scanProgress} currentAction={currentAction} itemsScanned={Math.floor((scanProgress / 100) * 50000)} totalItems={50000} issuesFound={issuesFound} onCancel={() => setIsScanning(false)} variant="protect" />}
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard value={realTimeProtection ? 'On' : 'Off'} label="Real-time Protection" icon={Shield} iconColor={realTimeProtection ? 'success' : 'danger'} size="sm" />
+        <StatCard value={systemHardeningMonitor ? 'On' : 'Off'} label="System Hardening Monitor" icon={Shield} iconColor={systemHardeningMonitor ? 'success' : 'danger'} size="sm" />
         <StatCard value={`${enabledCount}/${protectionFeatures.length}`} label="Features Active" icon={Check} iconColor="primary" size="sm" />
         <StatCard value={firewallEnabled ? 'Active' : 'Disabled'} label="Firewall" icon={Lock} iconColor={firewallEnabled ? 'success' : 'warning'} size="sm" />
-        <StatCard value={threatsFound.toString()} label="Threats Blocked" icon={AlertCircle} iconColor={threatsFound > 0 ? 'danger' : 'success'} size="sm" />
+        <StatCard value={issuesFound.toString()} label="Issues Blocked" icon={AlertCircle} iconColor={issuesFound > 0 ? 'danger' : 'success'} size="sm" />
       </div>
       
       <Card>
@@ -114,8 +114,8 @@ const ProtectModule: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center"><Search className="w-5 h-5 text-primary-500" /></div>
             <div>
-              <h3 className="font-semibold text-text-primary">Malware Scanner</h3>
-              <p className="text-sm text-text-secondary">Scan your system for threats</p>
+              <h3 className="font-semibold text-text-primary">Vulnerability Scanner</h3>
+              <p className="text-sm text-text-secondary">Scan your system for vulnerabilities</p>
             </div>
           </div>
         </CardHeader>
@@ -145,24 +145,24 @@ const ProtectModule: React.FC = () => {
                 <Button variant="secondary" className="w-full mt-4" onClick={() => handleScan('full')} leftIcon={<Search className="w-4 h-4" />}>Full Scan</Button>
               </div>
             </div>
-          ) : scanComplete && threatsFound > 0 ? (
+          ) : scanComplete && issuesFound > 0 ? (
             <div className="space-y-4">
               <div className="p-4 bg-danger-500/10 border border-danger-200 rounded-lg">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-danger-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-danger-500">Threats Detected!</h4>
-                    <p className="text-sm text-text-secondary mt-1">{threatsFound} threats were found on your system. We recommend removing them immediately.</p>
+                    <h4 className="font-medium text-danger-500">Issues Detected!</h4>
+                    <p className="text-sm text-text-secondary mt-1">{issuesFound} security issues were found on your system. We recommend remediating them immediately.</p>
                   </div>
                 </div>
               </div>
-              <Button variant="danger" fullWidth leftIcon={<Shield className="w-4 h-4" />}>Remove All Threats</Button>
+              <Button variant="danger" fullWidth leftIcon={<Shield className="w-4 h-4" />}>Remediate All Issues</Button>
             </div>
           ) : scanComplete ? (
             <div className="text-center py-6">
               <div className="w-16 h-16 rounded-full bg-success-500/20 flex items-center justify-center mx-auto mb-4"><Check className="w-8 h-8 text-success-500" /></div>
-              <h4 className="font-semibold text-text-primary">No Threats Found</h4>
-              <p className="text-text-secondary mt-1">Your system is clean and secure</p>
+              <h4 className="font-semibold text-text-primary">No Issues Found</h4>
+              <p className="text-text-secondary mt-1">Your system is hardened and secure</p>
               <Button variant="secondary" className="mt-4" onClick={() => setScanComplete(false)} leftIcon={<RefreshCw className="w-4 h-4" />}>Scan Again</Button>
             </div>
           ) : null}
@@ -174,15 +174,15 @@ const ProtectModule: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
-                <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', realTimeProtection ? 'bg-success-500/10 text-success-500' : 'bg-danger-500/10 text-danger-500')}>
+                <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', systemHardeningMonitor ? 'bg-success-500/10 text-success-500' : 'bg-danger-500/10 text-danger-500')}>
                   <Shield className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-text-primary">Real-time Protection</h3>
-                  <p className="text-sm text-text-secondary">Continuously monitor and block threats in real-time</p>
+                  <h3 className="font-semibold text-text-primary">System Hardening Monitor</h3>
+                  <p className="text-sm text-text-secondary">Continuously monitor system security and harden configurations</p>
                 </div>
               </div>
-              <Switch checked={realTimeProtection} onCheckedChange={setRealTimeProtection} />
+              <Switch checked={systemHardeningMonitor} onCheckedChange={setSystemHardeningMonitor} />
             </div>
           </CardContent>
         </Card>

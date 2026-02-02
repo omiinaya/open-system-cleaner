@@ -60,7 +60,7 @@ const calculateHealthScore = (metrics: SystemMetrics): number => {
   const cpuScore = 100 - metrics.cpu.usage;
   const memoryScore = 100 - (metrics.memory.used / metrics.memory.total) * 100;
   const diskScore = 100 - (metrics.disk.used / metrics.disk.total) * 100;
-  const securityScore = metrics.security.threats === 0 ? 100 : 50;
+  const securityScore = metrics.security.issues === 0 ? 100 : 50;
   
   return Math.round((cpuScore + memoryScore + diskScore + securityScore) / 4);
 };
@@ -761,7 +761,7 @@ const handleDefrag = async (driveLetter: string) => {
 ### Protect Module (4 Features)
 
 #### 17. Security Score Display
-**Description**: Large score display with color coding based on threat level
+**Description**: Large score display with color coding based on issue level
 
 **Difficulty**: Easy  
 **Estimated Time**: 2 hours  
@@ -770,11 +770,11 @@ const handleDefrag = async (driveLetter: string) => {
 
 **Technical Approach**:
 - Create security score component
-- Calculate score from threat count
+- Calculate score from issue count
 - Color code: Green (100), Yellow (50-99), Red (0-49)
 
 **Key Dependencies**:
-- Threat detection service
+- Vulnerability detection service
 - Security scoring algorithm
 
 **Technical Considerations**:
@@ -783,30 +783,30 @@ const handleDefrag = async (driveLetter: string) => {
 - Animate score changes
 
 **Prerequisites**:
-- Threat detection service
+- Vulnerability detection service
 
 **Implementation Code**:
 ```typescript
 // Security score calculation
-const calculateSecurityScore = (threats: number): number => {
-  if (threats === 0) return 100;
-  if (threats <= 5) return 75;
-  if (threats <= 10) return 50;
+const calculateSecurityScore = (issues: number): number => {
+  if (issues === 0) return 100;
+  if (issues <= 5) return 75;
+  if (issues <= 10) return 50;
   return 25;
 };
 
 const [securityScore, setSecurityScore] = useState(100);
-const [threats, setThreats] = useState(0);
+const [issues, setIssues] = useState(0);
 ```
 
 ---
 
-#### 18. Malware Scanner UI
+#### 18. Vulnerability Scanner UI
 **Description**: Quick and Full scan options with scan progress
 
-**Difficulty**: Easy  
-**Estimated Time**: 3 hours  
-**Current Status**: Implemented/UI Only  
+**Difficulty**: Easy
+**Estimated Time**: 3 hours
+**Current Status**: Implemented/UI Only
 **Module**: Protect
 
 **Technical Approach**:
@@ -815,7 +815,7 @@ const [threats, setThreats] = useState(0);
 - Implement scan start/stop functionality
 
 **Key Dependencies**:
-- Malware scanning service
+- Vulnerability scanning service
 - Progress tracking system
 
 **Technical Considerations**:
@@ -824,11 +824,11 @@ const [threats, setThreats] = useState(0);
 - Allow scan cancellation
 
 **Prerequisites**:
-- Malware scanning service
+- Vulnerability scanning service
 
 **Implementation Code**:
 ```typescript
-// Malware scanner state
+// Vulnerability scanner state
 const [scanType, setScanType] = useState<'quick' | 'full'>('quick');
 const [isScanning, setIsScanning] = useState(false);
 const [scanProgress, setScanProgress] = useState(0);
@@ -837,7 +837,7 @@ const handleStartScan = async () => {
   setIsScanning(true);
   setScanProgress(0);
   
-  await window.electronAPI.startMalwareScan(scanType);
+  await window.electronAPI.startVulnerabilityScan(scanType);
   
   setIsScanning(false);
 };
@@ -845,8 +845,8 @@ const handleStartScan = async () => {
 
 ---
 
-#### 19. Real-time Protection Toggle
-**Description**: Toggle switch for continuous threat monitoring
+#### 19. System Hardening Monitor Toggle
+**Description**: Toggle switch for continuous security monitoring
 
 **Difficulty**: Easy  
 **Estimated Time**: 1 hour  
@@ -859,7 +859,7 @@ const handleStartScan = async () => {
 - Show protection status indicator
 
 **Key Dependencies**:
-- Real-time protection service
+- System hardening monitor service
 - Toggle state management
 
 **Technical Considerations**:
@@ -868,16 +868,16 @@ const handleStartScan = async () => {
 - Warn about disabling protection
 
 **Prerequisites**:
-- Real-time protection service
+- System hardening monitor service
 
 **Implementation Code**:
 ```typescript
-// Real-time protection state
-const [realTimeProtection, setRealTimeProtection] = useState(false);
+// System hardening monitor state
+const [realTimeProtection, setSystemHardeningMonitor] = useState(false);
 
 const handleProtectionToggle = async (enabled: boolean) => {
-  setRealTimeProtection(enabled);
-  await window.electronAPI.setRealTimeProtection(enabled);
+  setSystemHardeningMonitor(enabled);
+  await window.electronAPI.setSystemHardeningMonitor(enabled);
 };
 ```
 
@@ -1529,7 +1529,7 @@ export class SystemMetricsService {
 **Key Dependencies**:
 - System metrics service
 - Historical data storage
-- Security threat data
+- Security issue data
 
 **Technical Considerations**:
 - Weight factors appropriately
@@ -1548,7 +1548,7 @@ interface HealthFactors {
   cpuUsage: number;
   memoryUsage: number;
   diskUsage: number;
-  securityThreats: number;
+  securityIssues: number;
   startupPrograms: number;
   systemAge: number; // days since last optimization
 }
@@ -1558,7 +1558,7 @@ export const calculateHealthScore = (factors: HealthFactors): number => {
   const cpuScore = Math.max(0, 100 - factors.cpuUsage);
   const memoryScore = Math.max(0, 100 - factors.memoryUsage);
   const diskScore = Math.max(0, 100 - factors.diskUsage);
-  const securityScore = factors.securityThreats === 0 ? 100 : Math.max(0, 100 - factors.securityThreats * 10);
+  const securityScore = factors.securityIssues === 0 ? 100 : Math.max(0, 100 - factors.securityIssues * 10);
   const startupScore = Math.max(0, 100 - factors.startupPrograms * 5);
   const ageScore = Math.max(0, 100 - factors.systemAge * 0.5);
   
@@ -1598,8 +1598,8 @@ export const getHealthRecommendations = (factors: HealthFactors): string[] => {
     recommendations.push('Disk space is critically low. Clean junk files and remove large files.');
   }
   
-  if (factors.securityThreats > 0) {
-    recommendations.push(`${factors.securityThreats} security threats found. Run malware scan immediately.`);
+  if (factors.securityIssues > 0) {
+    recommendations.push(`${factors.securityIssues} security issues found. Run vulnerability scan immediately.`);
   }
   
   if (factors.startupPrograms > 10) {
@@ -2996,8 +2996,8 @@ interface DefragResult {
 
 ### Protect Module (4 Features)
 
-#### 46. Malware Scanning Engine
-**Description**: Scan system for malware, spyware, and adware
+#### 46. Vulnerability Scanning Engine
+**Description**: Scan system for security vulnerabilities and misconfigurations
 
 **Difficulty**: Medium  
 **Estimated Time**: 16 hours  
@@ -3005,13 +3005,13 @@ interface DefragResult {
 **Module**: Protect
 
 **Technical Approach**:
-- Create malware scanning service
+- Create vulnerability scanning service
 - Use signature-based detection
 - Implement heuristic analysis
 - Scan files, registry, and processes
 
 **Key Dependencies**:
-- Malware signature database
+- Vulnerability database
 - File scanning
 - Registry scanning
 - Process scanning
@@ -3019,7 +3019,7 @@ interface DefragResult {
 **Technical Considerations**:
 - Maintain signature database
 - Implement quick and full scan modes
-- Provide quarantine functionality
+- Provide remediation functionality
 - Update signatures regularly
 
 **Prerequisites**:
@@ -3029,38 +3029,38 @@ interface DefragResult {
 
 **Implementation Code**:
 ```typescript
-// Malware scanning engine
+// Vulnerability scanning engine
 import * as fs from 'fs/promises';
 import * as crypto from 'crypto';
 import { Registry } from 'winreg';
 
-interface MalwareSignature {
+interface VulnerabilitySignature {
   name: string;
   type: 'virus' | 'trojan' | 'spyware' | 'adware' | 'worm';
   hash: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
-interface Threat {
+interface SecurityIssue {
   id: string;
   name: string;
   type: string;
   path: string;
   severity: string;
-  signature: MalwareSignature;
+  signature: VulnerabilitySignature;
 }
 
-export class MalwareScanner {
-  private signatures: MalwareSignature[] = [];
+export class VulnerabilityScanner {
+  private signatures: VulnerabilitySignature[] = [];
   
   async loadSignatures(): Promise<void> {
-    // Load malware signatures from database
+    // Load vulnerability database from database
     // This could be from a local file or remote API
     this.signatures = await this.fetchSignatures();
   }
   
-  async quickScan(onProgress?: (progress: number) => void): Promise<Threat[]> {
-    const threats: Threat[] = [];
+  async quickScan(onProgress?: (progress: number) => void): Promise<SecurityIssue[]> {
+    const issues: SecurityIssue[] = [];
     
     // Scan critical areas
     const scanAreas = [
@@ -3071,8 +3071,8 @@ export class MalwareScanner {
     
     let completed = 0;
     for (const area of scanAreas) {
-      const areaThreats = await area;
-      threats.push(...areaThreats);
+      const areaIssues = await area;
+      issues.push(...areaIssues);
       
       completed++;
       if (onProgress) {
@@ -3080,28 +3080,28 @@ export class MalwareScanner {
       }
     }
     
-    return threats;
+    return issues;
   }
   
-  async fullScan(onProgress?: (progress: number) => void): Promise<Threat[]> {
-    const threats: Threat[] = [];
+  async fullScan(onProgress?: (progress: number) => void): Promise<SecurityIssue[]> {
+    const issues: SecurityIssue[] = [];
     
     // Scan entire system
     const drives = await this.getSystemDrives();
     
     for (let i = 0; i < drives.length; i++) {
-      const driveThreats = await this.scanDrive(drives[i]);
-      threats.push(...driveThreats);
+      const driveIssues = await this.scanDrive(drives[i]);
+      issues.push(...driveIssues);
       
       if (onProgress) {
         onProgress(((i + 1) / drives.length) * 100);
       }
     }
     
-    return threats;
+    return issues;
   }
   
-  private async scanFile(filePath: string): Promise<Threat | null> {
+  private async scanFile(filePath: string): Promise<SecurityIssue | null> {
     try {
       const fileHash = await this.calculateFileHash(filePath);
       const signature = this.signatures.find(s => s.hash === fileHash);
@@ -3134,22 +3134,22 @@ export class MalwareScanner {
     });
   }
   
-  private async scanStartupPrograms(): Promise<Threat[]> {
+  private async scanStartupPrograms(): Promise<SecurityIssue[]> {
     // Scan startup programs
     return [];
   }
   
-  private async scanSystemDirectory(): Promise<Threat[]> {
+  private async scanSystemDirectory(): Promise<SecurityIssue[]> {
     // Scan system directory
     return [];
   }
   
-  private async scanUserDirectory(): Promise<Threat[]> {
+  private async scanUserDirectory(): Promise<SecurityIssue[]> {
     // Scan user directory
     return [];
   }
   
-  private async scanDrive(driveLetter: string): Promise<Threat[]> {
+  private async scanDrive(driveLetter: string): Promise<SecurityIssue[]> {
     // Scan entire drive
     return [];
   }
@@ -3159,18 +3159,18 @@ export class MalwareScanner {
     return ['C:'];
   }
   
-  private async fetchSignatures(): Promise<MalwareSignature[]> {
+  private async fetchSignatures(): Promise<VulnerabilitySignature[]> {
     // Fetch signatures from database or API
     return [];
   }
   
-  async quarantineThreat(threat: Threat): Promise<boolean> {
-    // Move threat to quarantine
+  async remediateIssue(issue: SecurityIssue): Promise<boolean> {
+    // Remediate issue from system
     return true;
   }
   
-  async removeThreat(threat: Threat): Promise<boolean> {
-    // Remove threat from system
+  async removeIssue(issue: SecurityIssue): Promise<boolean> {
+    // Remove issue from system
     return true;
   }
 }
@@ -3178,8 +3178,8 @@ export class MalwareScanner {
 
 ---
 
-#### 47. Real-time Protection Service
-**Description**: Continuous monitoring for threats in real-time
+#### 47. System Hardening Monitor Service
+**Description**: Continuous monitoring for security issues in real-time
 
 **Difficulty**: Medium  
 **Estimated Time**: 12 hours  
@@ -3187,7 +3187,7 @@ export class MalwareScanner {
 **Module**: Protect
 
 **Technical Approach**:
-- Create real-time protection service
+- Create system hardening monitor service
 - Monitor file system changes
 - Monitor process creation
 - Monitor network connections
@@ -3196,7 +3196,7 @@ export class MalwareScanner {
 - File system watcher
 - Process monitoring
 - Network monitoring
-- Malware signatures
+- Vulnerability database
 
 **Technical Considerations**:
 - Performance impact
@@ -3205,16 +3205,16 @@ export class MalwareScanner {
 - User notifications
 
 **Prerequisites**:
-- Malware signatures
+- Vulnerability database
 - File system access
 
 **Implementation Code**:
 ```typescript
-// Real-time protection service
+// System hardening monitor service
 import { watch } from 'fs';
 import { exec } from 'child_process';
 
-export class RealTimeProtection {
+export class SystemHardeningMonitor {
   private isEnabled: boolean = false;
   private fileWatchers: Map<string, fs.FSWatcher> = new Map();
   private scanQueue: Set<string> = new Set();
@@ -3283,25 +3283,25 @@ export class RealTimeProtection {
     
     try {
       // Scan the file
-      const threat = await this.scanFile(filePath);
+      const issue = await this.scanFile(filePath);
       
-      if (threat) {
-        await this.handleThreat(threat);
+      if (issue) {
+        await this.handleIssue(issue);
       }
     } finally {
       this.scanQueue.delete(filePath);
     }
   }
   
-  private async scanFile(filePath: string): Promise<Threat | null> {
-    // Scan file for malware
-    // Use the malware scanner
+  private async scanFile(filePath: string): Promise<SecurityIssue | null> {
+    // Scan file for vulnerabilities
+    // Use the vulnerability scanner
     return null;
   }
   
-  private async handleThreat(threat: Threat): Promise<void> {
-    // Handle detected threat
-    // Notify user, quarantine, etc.
+  private async handleIssue(issue: SecurityIssue): Promise<void> {
+    // Handle detected security issue
+    // Notify user, remediate, etc.
   }
   
   private async startProcessMonitoring(): Promise<void> {
@@ -3470,8 +3470,8 @@ interface ConnectionInfo {
 
 ---
 
-#### 49. Threat Detection and Removal
-**Description**: Detect, quarantine, and remove security threats
+#### 49. Vulnerability Detection and Remediation
+**Description**: Detect and remediate security vulnerabilities
 
 **Difficulty**: Medium  
 **Estimated Time**: 6 hours  
@@ -3479,195 +3479,195 @@ interface ConnectionInfo {
 **Module**: Protect
 
 **Technical Approach**:
-- Create threat management service
-- Implement quarantine system
-- Provide threat removal
-- Generate threat reports
+- Create vulnerability management service
+- Implement remediation system
+- Provide vulnerability remediation
+- Generate vulnerability reports
 
 **Key Dependencies**:
-- Malware scanner
+- Vulnerability scanner
 - File system access
-- Quarantine storage
+- Remediation storage
 
 **Technical Considerations**:
-- Safe quarantine implementation
-- Prevent threat reactivation
+- Safe remediation implementation
+- Prevent issue reactivation
 - Provide restore functionality
 - Generate detailed reports
 
 **Prerequisites**:
-- Malware scanner
+- Vulnerability scanner
 - File system access
 
 **Implementation Code**:
 ```typescript
-// Threat detection and removal service
+// Vulnerability detection and remediation service
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { app } from 'electron';
 
-interface QuarantineEntry {
+interface RemediationEntry {
   id: string;
   originalPath: string;
-  quarantinePath: string;
-  threat: Threat;
-  quarantinedAt: Date;
+  remediationPath: string;
+  issue: SecurityIssue;
+  remediatedAt: Date;
 }
 
-export class ThreatManager {
-  private quarantineDir: string;
-  private quarantineIndex: Map<string, QuarantineEntry> = new Map();
+export class VulnerabilityManager {
+  private remediationDir: string;
+  private remediationIndex: Map<string, RemediationEntry> = new Map();
   
   constructor() {
-    this.quarantineDir = path.join(app.getPath('userData'), 'quarantine');
-    this.initializeQuarantine();
+    this.remediationDir = path.join(app.getPath('userData'), 'remediation');
+    this.initializeRemediation();
   }
   
-  private async initializeQuarantine(): Promise<void> {
+  private async initializeRemediation(): Promise<void> {
     try {
-      await fs.mkdir(this.quarantineDir, { recursive: true });
-      await this.loadQuarantineIndex();
+      await fs.mkdir(this.remediationDir, { recursive: true });
+      await this.loadRemediationIndex();
     } catch (error) {
-      console.error('Failed to initialize quarantine:', error);
+      console.error('Failed to initialize remediation:', error);
     }
   }
   
-  async quarantineThreat(threat: Threat): Promise<boolean> {
+  async remediateIssue(issue: SecurityIssue): Promise<boolean> {
     try {
-      // Generate quarantine path
-      const quarantineId = crypto.randomUUID();
-      const quarantinePath = path.join(this.quarantineDir, `${quarantineId}${path.extname(threat.path)}`);
+      // Generate remediation path
+      const remediationId = crypto.randomUUID();
+      const remediationPath = path.join(this.remediationDir, `${remediationId}${path.extname(issue.path)}`);
       
-      // Move file to quarantine
-      await fs.rename(threat.path, quarantinePath);
+      // Move file to remediation
+      await fs.rename(issue.path, remediationPath);
       
-      // Create quarantine entry
-      const entry: QuarantineEntry = {
-        id: quarantineId,
-        originalPath: threat.path,
-        quarantinePath,
-        threat,
-        quarantinedAt: new Date()
+      // Create remediation entry
+      const entry: RemediationEntry = {
+        id: remediationId,
+        originalPath: issue.path,
+        remediationPath,
+        issue,
+        remediatedAt: new Date()
       };
       
-      this.quarantineIndex.set(quarantineId, entry);
-      await this.saveQuarantineIndex();
+      this.remediationIndex.set(remediationId, entry);
+      await this.saveRemediationIndex();
       
       return true;
     } catch (error) {
-      console.error('Failed to quarantine threat:', error);
+      console.error('Failed to remediate issue:', error);
       return false;
     }
   }
   
-  async removeThreat(threat: Threat): Promise<boolean> {
+  async removeIssue(issue: SecurityIssue): Promise<boolean> {
     try {
-      // Delete the threat file
-      await fs.unlink(threat.path);
+      // Delete the issue file
+      await fs.unlink(issue.path);
       return true;
     } catch (error) {
-      console.error('Failed to remove threat:', error);
+      console.error('Failed to remove issue:', error);
       return false;
     }
   }
   
-  async restoreThreat(quarantineId: string): Promise<boolean> {
-    const entry = this.quarantineIndex.get(quarantineId);
+  async restoreIssue(remediationId: string): Promise<boolean> {
+    const entry = this.remediationIndex.get(remediationId);
     if (!entry) return false;
     
     try {
-      // Restore file from quarantine
-      await fs.rename(entry.quarantinePath, entry.originalPath);
+      // Restore file from remediation
+      await fs.rename(entry.remediationPath, entry.originalPath);
       
-      // Remove from quarantine index
-      this.quarantineIndex.delete(quarantineId);
-      await this.saveQuarantineIndex();
+      // Remove from remediation index
+      this.remediationIndex.delete(remediationId);
+      await this.saveRemediationIndex();
       
       return true;
     } catch (error) {
-      console.error('Failed to restore threat:', error);
+      console.error('Failed to restore issue:', error);
       return false;
     }
   }
   
-  async deleteQuarantined(quarantineId: string): Promise<boolean> {
-    const entry = this.quarantineIndex.get(quarantineId);
+  async deleteRemediated(remediationId: string): Promise<boolean> {
+    const entry = this.remediationIndex.get(remediationId);
     if (!entry) return false;
     
     try {
-      // Delete quarantined file
-      await fs.unlink(entry.quarantinePath);
+      // Delete remediated file
+      await fs.unlink(entry.remediationPath);
       
-      // Remove from quarantine index
-      this.quarantineIndex.delete(quarantineId);
-      await this.saveQuarantineIndex();
+      // Remove from remediation index
+      this.remediationIndex.delete(remediationId);
+      await this.saveRemediationIndex();
       
       return true;
     } catch (error) {
-      console.error('Failed to delete quarantined file:', error);
+      console.error('Failed to delete remediated file:', error);
       return false;
     }
   }
   
-  getQuarantineList(): QuarantineEntry[] {
-    return Array.from(this.quarantineIndex.values());
+  getRemediationList(): RemediationEntry[] {
+    return Array.from(this.remediationIndex.values());
   }
   
-  async generateReport(): Promise<ThreatReport> {
-    const entries = this.getQuarantineList();
+  async generateReport(): Promise<VulnerabilityReport> {
+    const entries = this.getRemediationList();
     
     return {
-      totalThreats: entries.length,
+      totalIssues: entries.length,
       byType: this.groupByType(entries),
       bySeverity: this.groupBySeverity(entries),
-      quarantinedAt: entries.map(e => e.quarantinedAt)
+      remediatedAt: entries.map(e => e.remediatedAt)
     };
   }
   
-  private async loadQuarantineIndex(): Promise<void> {
+  private async loadRemediationIndex(): Promise<void> {
     try {
-      const indexPath = path.join(this.quarantineDir, 'index.json');
+      const indexPath = path.join(this.remediationDir, 'index.json');
       const data = await fs.readFile(indexPath, 'utf-8');
-      const entries: QuarantineEntry[] = JSON.parse(data);
+      const entries: RemediationEntry[] = JSON.parse(data);
       
-      this.quarantineIndex.clear();
+      this.remediationIndex.clear();
       entries.forEach(entry => {
-        this.quarantineIndex.set(entry.id, entry);
+        this.remediationIndex.set(entry.id, entry);
       });
     } catch (error) {
       // Index doesn't exist yet
     }
   }
   
-  private async saveQuarantineIndex(): Promise<void> {
-    const indexPath = path.join(this.quarantineDir, 'index.json');
-    const entries = Array.from(this.quarantineIndex.values());
+  private async saveRemediationIndex(): Promise<void> {
+    const indexPath = path.join(this.remediationDir, 'index.json');
+    const entries = Array.from(this.remediationIndex.values());
     await fs.writeFile(indexPath, JSON.stringify(entries, null, 2));
   }
   
-  private groupByType(entries: QuarantineEntry[]): Record<string, number> {
+  private groupByType(entries: RemediationEntry[]): Record<string, number> {
     const grouped: Record<string, number> = {};
     entries.forEach(entry => {
-      grouped[entry.threat.type] = (grouped[entry.threat.type] || 0) + 1;
+      grouped[entry.issue.type] = (grouped[entry.issue.type] || 0) + 1;
     });
     return grouped;
   }
   
-  private groupBySeverity(entries: QuarantineEntry[]): Record<string, number> {
+  private groupBySeverity(entries: RemediationEntry[]): Record<string, number> {
     const grouped: Record<string, number> = {};
     entries.forEach(entry => {
-      grouped[entry.threat.severity] = (grouped[entry.threat.severity] || 0) + 1;
+      grouped[entry.issue.severity] = (grouped[entry.issue.severity] || 0) + 1;
     });
     return grouped;
   }
 }
 
-interface ThreatReport {
-  totalThreats: number;
+interface SecurityIssueReport {
+  totalIssues: number;
   byType: Record<string, number>;
   bySeverity: Record<string, number>;
-  quarantinedAt: Date[];
+  remediatedAt: Date[];
 }
 ```
 
@@ -8037,7 +8037,7 @@ interface TrackerStats {
 
 **Technical Considerations**:
 - Update phishing database regularly
-- Provide real-time protection
+- Provide system hardening monitor
 - Show phishing warnings
 - Allow false positive reporting
 
@@ -11837,7 +11837,7 @@ class ApplicationPrivacyMonitor extends PrivacyMonitor {
 ### Protect Module (2 Features)
 
 #### 79. Behavioral Analysis Engine
-**Description**: Detect threats using behavioral analysis
+**Description**: Detect vulnerabilities using behavioral analysis
 
 **Difficulty**: Very Hard  
 **Estimated Time**: 24 hours  
@@ -11848,13 +11848,13 @@ class ApplicationPrivacyMonitor extends PrivacyMonitor {
 - Create behavioral analysis engine
 - Monitor system behavior
 - Detect anomalies
-- Classify threats
+- Classify vulnerabilities
 
 **Key Dependencies**:
 - System monitoring
 - Machine learning
 - Behavioral database
-- Threat intelligence
+- Vulnerability intelligence
 
 **Technical Considerations**:
 - Real-time monitoring
@@ -11873,11 +11873,11 @@ export class BehavioralAnalysisEngine {
   private behaviorModels: Map<string, BehaviorModel> = new Map();
   private baselineBehaviors: Map<string, BaselineBehavior> = new Map();
   private anomalyDetectors: Map<string, AnomalyDetector> = new Map();
-  private threatClassifiers: ThreatClassifier[] = [];
+  private issueClassifiers: IssueClassifier[] = [];
   
   constructor(
     private systemMonitor: SystemMonitor,
-    private threatDatabase: ThreatDatabase
+    private issueDatabase: IssueDatabase
   ) {
     this.initializeModels();
     this.initializeDetectors();
@@ -11899,7 +11899,7 @@ export class BehavioralAnalysisEngine {
   
   async analyzeBehavior(behavior: SystemBehavior): Promise<BehaviorAnalysisResult> {
     const anomalies: Anomaly[] = [];
-    const threats: DetectedThreat[] = [];
+    const issues: DetectedIssue[] = [];
     
     // Check for anomalies
     for (const [type, detector] of this.anomalyDetectors) {
@@ -11909,11 +11909,11 @@ export class BehavioralAnalysisEngine {
       }
     }
     
-    // Classify threats
-    for (const classifier of this.threatClassifiers) {
-      const threat = await classifier.classify(behavior, anomalies);
-      if (threat) {
-        threats.push(threat);
+    // Classify vulnerabilities
+    for (const classifier of this.issueClassifiers) {
+      const issue = await classifier.classify(behavior, anomalies);
+      if (issue) {
+        issues.push(issue);
       }
     }
     
@@ -11921,9 +11921,9 @@ export class BehavioralAnalysisEngine {
       timestamp: new Date(),
       behavior,
       anomalies,
-      threats,
-      riskScore: this.calculateRiskScore(anomalies, threats),
-      recommendations: this.generateRecommendations(anomalies, threats)
+      issues,
+      riskScore: this.calculateRiskScore(anomalies, issues),
+      recommendations: this.generateRecommendations(anomalies, issues)
     };
   }
   
@@ -11963,7 +11963,7 @@ export class BehavioralAnalysisEngine {
     };
   }
   
-  private calculateRiskScore(anomalies: Anomaly[], threats: DetectedThreat[]): number {
+  private calculateRiskScore(anomalies: Anomaly[], issues: DetectedIssue[]): number {
     let score = 0;
     
     // Anomalies contribute to risk
@@ -11973,19 +11973,19 @@ export class BehavioralAnalysisEngine {
                anomaly.severity === 'medium' ? 10 : 5;
     }
     
-    // Threats contribute more to risk
-    for (const threat of threats) {
-      score += threat.confidence * 50;
+    // Issues contribute more to risk
+    for (const issue of issues) {
+      score += issue.confidence * 50;
     }
     
     return Math.min(score, 100);
   }
   
-  private generateRecommendations(anomalies: Anomaly[], threats: DetectedThreat[]): string[] {
+  private generateRecommendations(anomalies: Anomaly[], issues: DetectedIssue[]): string[] {
     const recommendations: string[] = [];
     
-    if (threats.length > 0) {
-      recommendations.push('Threats detected. Run full malware scan immediately.');
+    if (issues.length > 0) {
+      recommendations.push('Issues detected. Run full vulnerability scan immediately.');
     }
     
     if (anomalies.length > 5) {
@@ -12017,10 +12017,10 @@ export class BehavioralAnalysisEngine {
   }
   
   private async initializeClassifiers(): Promise<void> {
-    // Initialize threat classifiers
-    this.threatClassifiers.push(new MalwareClassifier());
-    this.threatClassifiers.push(new RansomwareClassifier());
-    this.threatClassifiers.push(new SpywareClassifier());
+    // Initialize issue classifiers
+    this.issueClassifiers.push(new VulnerabilityClassifier());
+    this.issueClassifiers.push(new ConfigurationClassifier());
+    this.issueClassifiers.push(new SpywareClassifier());
   }
   
   private sleep(ms: number): Promise<void> {
@@ -12050,9 +12050,9 @@ class AnomalyDetector {
   }
 }
 
-class ThreatClassifier {
-  async classify(behavior: SystemBehavior, anomalies: Anomaly[]): Promise<DetectedThreat | null> {
-    // Classify threats
+class IssueClassifier {
+  async classify(behavior: SystemBehavior, anomalies: Anomaly[]): Promise<DetectedIssue | null> {
+    // Classify vulnerabilities
     return null;
   }
 }
@@ -12089,15 +12089,15 @@ class RegistryAnomalyDetector extends AnomalyDetector {
   // Registry-specific anomaly detection
 }
 
-class MalwareClassifier extends ThreatClassifier {
-  // Malware classification
+class VulnerabilityClassifier extends IssueClassifier {
+  // Vulnerability classification
 }
 
-class RansomwareClassifier extends ThreatClassifier {
+class ConfigurationClassifier extends IssueClassifier {
   // Ransomware classification
 }
 
-class SpywareClassifier extends ThreatClassifier {
+class PrivacyClassifier extends IssueClassifier {
   // Spyware classification
 }
 
@@ -12146,7 +12146,7 @@ interface BehaviorAnalysisResult {
   timestamp: Date;
   behavior: SystemBehavior;
   anomalies: Anomaly[];
-  threats: DetectedThreat[];
+  issues: DetectedIssue[];
   riskScore: number;
   recommendations: string[];
 }
@@ -12160,7 +12160,7 @@ interface Anomaly {
   details: any;
 }
 
-interface DetectedThreat {
+interface DetectedIssue {
   id: string;
   type: string;
   name: string;
@@ -12191,8 +12191,8 @@ interface ModelTrainingResult {
 
 ---
 
-#### 80. Advanced Threat Intelligence
-**Description**: Integrate with threat intelligence feeds for enhanced protection
+#### 80. Advanced Vulnerability Intelligence
+**Description**: Integrate with vulnerability intelligence feeds for enhanced protection
 
 **Difficulty**: Very Hard  
 **Estimated Time**: 20 hours  
@@ -12200,15 +12200,15 @@ interface ModelTrainingResult {
 **Module**: Protect
 
 **Technical Approach**:
-- Create threat intelligence service
+- Create vulnerability intelligence service
 - Integrate with multiple feeds
-- Correlate threat data
+- Correlate vulnerability data
 - Provide actionable intelligence
 
 **Key Dependencies**:
-- Threat intelligence APIs
+- Vulnerability intelligence APIs
 - Data correlation engine
-- Threat database
+- Vulnerability database
 - Analysis tools
 
 **Technical Considerations**:
@@ -12218,38 +12218,38 @@ interface ModelTrainingResult {
 - Performance impact
 
 **Prerequisites**:
-- Threat intelligence APIs
-- Threat database
+- Vulnerability intelligence APIs
+- Vulnerability database
 
 **Implementation Code**:
 ```typescript
-// Advanced threat intelligence
-export class ThreatIntelligenceService {
-  private feeds: Map<string, ThreatFeed> = new Map();
-  private threatDatabase: ThreatDatabase;
+// Advanced vulnerability intelligence
+export class VulnerabilityIntelligenceService {
+  private feeds: Map<string, VulnerabilityFeed> = new Map();
+  private issueDatabase: IssueDatabase;
   private correlationEngine: CorrelationEngine;
   private updateInterval: NodeJS.Timeout | null = null;
   
   constructor() {
-    this.threatDatabase = new ThreatDatabase();
+    this.issueDatabase = new IssueDatabase();
     this.correlationEngine = new CorrelationEngine();
     this.initializeFeeds();
   }
   
   async start(): Promise<void> {
-    // Start threat intelligence feeds
+    // Start vulnerability intelligence feeds
     for (const feed of this.feeds.values()) {
       await feed.start();
     }
     
     // Start periodic updates
     this.updateInterval = setInterval(async () => {
-      await this.updateThreatData();
+      await this.updateVulnerabilityData();
     }, 60 * 60 * 1000); // Update every hour
   }
   
   async stop(): Promise<void> {
-    // Stop threat intelligence feeds
+    // Stop vulnerability intelligence feeds
     for (const feed of this.feeds.values()) {
       await feed.stop();
     }
@@ -12261,8 +12261,8 @@ export class ThreatIntelligenceService {
     }
   }
   
-  async checkThreat(indicator: ThreatIndicator): Promise<ThreatIntelligenceResult> {
-    // Check threat against all feeds
+  async checkVulnerability(indicator: VulnerabilityIndicator): Promise<VulnerabilityIntelligenceResult> {
+    // Check vulnerability against all feeds
     const feedResults: FeedResult[] = [];
     
     for (const [name, feed] of this.feeds) {
@@ -12277,7 +12277,7 @@ export class ThreatIntelligenceService {
     const correlated = await this.correlationEngine.correlate(feedResults);
     
     // Check local database
-    const localResult = await this.threatDatabase.check(indicator);
+    const localResult = await this.issueDatabase.check(indicator);
     
     return {
       indicator,
@@ -12289,23 +12289,23 @@ export class ThreatIntelligenceService {
     };
   }
   
-  async updateThreatData(): Promise<void> {
-    // Update threat data from all feeds
+  async updateVulnerabilityData(): Promise<void> {
+    // Update vulnerability data from all feeds
     for (const feed of this.feeds.values()) {
       try {
         const updates = await feed.fetchUpdates();
-        await this.threatDatabase.addThreats(updates);
+        await this.issueDatabase.addIssues(updates);
       } catch (error) {
         console.error(`Failed to update feed ${feed.name}:`, error);
       }
     }
   }
   
-  async getThreatReport(indicators: ThreatIndicator[]): Promise<ThreatReport> {
-    const results: ThreatIntelligenceResult[] = [];
+  async getVulnerabilityReport(indicators: VulnerabilityIndicator[]): Promise<VulnerabilityReport> {
+    const results: VulnerabilityIntelligenceResult[] = [];
     
     for (const indicator of indicators) {
-      const result = await this.checkThreat(indicator);
+      const result = await this.checkVulnerability(indicator);
       results.push(result);
     }
     
@@ -12315,7 +12315,7 @@ export class ThreatIntelligenceService {
     return {
       generatedAt: new Date(),
       indicators: results.length,
-      threats: results.filter(r => r.overallRisk > 0.5),
+      issues: results.filter(r => r.overallRisk > 0.5),
       correlations,
       summary: this.generateSummary(results),
       recommendations: this.generateOverallRecommendations(results)
@@ -12348,11 +12348,11 @@ export class ThreatIntelligenceService {
     const recommendations: string[] = [];
     
     if (correlated.matches > 0) {
-      recommendations.push(`Threat detected in ${correlated.matches} intelligence feeds`);
+      recommendations.push(`Issue detected in ${correlated.matches} intelligence feeds`);
     }
     
     if (localResult.matches > 0) {
-      recommendations.push('Threat found in local threat database');
+      recommendations.push('Issue found in local vulnerability database');
     }
     
     if (correlated.severity === 'critical') {
@@ -12362,51 +12362,51 @@ export class ThreatIntelligenceService {
     return recommendations;
   }
   
-  private generateSummary(results: ThreatIntelligenceResult[]): ThreatSummary {
+  private generateSummary(results: VulnerabilityIntelligenceResult[]): VulnerabilitySummary {
     const total = results.length;
-    const threats = results.filter(r => r.overallRisk > 0.5);
-    const critical = threats.filter(r => r.correlated.severity === 'critical').length;
-    const high = threats.filter(r => r.correlated.severity === 'high').length;
-    const medium = threats.filter(r => r.correlated.severity === 'medium').length;
-    const low = threats.filter(r => r.correlated.severity === 'low').length;
+    const issues = results.filter(r => r.overallRisk > 0.5);
+    const critical = issues.filter(r => r.correlated.severity === 'critical').length;
+    const high = issues.filter(r => r.correlated.severity === 'high').length;
+    const medium = issues.filter(r => r.correlated.severity === 'medium').length;
+    const low = issues.filter(r => r.correlated.severity === 'low').length;
     
     return {
       total,
-      threats: threats.length,
+      issues: issues.length,
       critical,
       high,
       medium,
       low,
-      safe: total - threats.length
+      safe: total - issues.length
     };
   }
   
-  private generateOverallRecommendations(results: ThreatIntelligenceResult[]): string[] {
+  private generateOverallRecommendations(results: VulnerabilityIntelligenceResult[]): string[] {
     const recommendations: string[] = [];
-    const threats = results.filter(r => r.overallRisk > 0.5);
+    const issues = results.filter(r => r.overallRisk > 0.5);
     
-    if (threats.length === 0) {
-      recommendations.push('No threats detected. System is safe.');
+    if (issues.length === 0) {
+      recommendations.push('No issues detected. System is safe.');
       return recommendations;
     }
     
-    const critical = threats.filter(r => r.correlated.severity === 'critical');
+    const critical = issues.filter(r => r.correlated.severity === 'critical');
     if (critical.length > 0) {
-      recommendations.push(`${critical.length} critical threats detected. Immediate action required.`);
+      recommendations.push(`${critical.length} critical issues detected. Immediate action required.`);
     }
     
-    const high = threats.filter(r => r.correlated.severity === 'high');
+    const high = issues.filter(r => r.correlated.severity === 'high');
     if (high.length > 0) {
-      recommendations.push(`${high.length} high-risk threats detected. Prompt action recommended.`);
+      recommendations.push(`${high.length} high-risk issues detected. Prompt action recommended.`);
     }
     
-    recommendations.push('Run full system scan to remove all threats.');
+    recommendations.push('Run full system scan to remediate all issues.');
     
     return recommendations;
   }
   
   private async initializeFeeds(): Promise<void> {
-    // Initialize threat intelligence feeds
+    // Initialize vulnerability intelligence feeds
     
     // VirusTotal feed
     this.feeds.set('virustotal', new VirusTotalFeed());
@@ -12418,11 +12418,11 @@ export class ThreatIntelligenceService {
     this.feeds.set('abuseipdb', new AbuseIPDBFeed());
     
     // Custom feed
-    this.feeds.set('custom', new CustomThreatFeed());
+    this.feeds.set('custom', new CustomVulnerabilityFeed());
   }
 }
 
-class ThreatFeed {
+class VulnerabilityFeed {
   name: string = '';
   
   async start(): Promise<void> {
@@ -12433,7 +12433,7 @@ class ThreatFeed {
     // Stop feed
   }
   
-  async check(indicator: ThreatIndicator): Promise<FeedCheckResult> {
+  async check(indicator: VulnerabilityIndicator): Promise<FeedCheckResult> {
     // Check indicator
     return {
       matches: 0,
@@ -12443,38 +12443,38 @@ class ThreatFeed {
     };
   }
   
-  async fetchUpdates(): Promise<ThreatData[]> {
+  async fetchUpdates(): Promise<VulnerabilityData[]> {
     // Fetch updates
     return [];
   }
 }
 
-class VirusTotalFeed extends ThreatFeed {
+class NVDFeed extends VulnerabilityFeed {
   name = 'VirusTotal';
   
   // VirusTotal-specific implementation
 }
 
-class AlienVaultFeed extends ThreatFeed {
+class CISAFeed extends VulnerabilityFeed {
   name = 'AlienVault OTX';
   
   // AlienVault-specific implementation
 }
 
-class AbuseIPDBFeed extends ThreatFeed {
+class CustomFeed extends VulnerabilityFeed {
   name = 'AbuseIPDB';
   
   // AbuseIPDB-specific implementation
 }
 
-class CustomThreatFeed extends ThreatFeed {
+class LocalFeed extends VulnerabilityFeed {
   name = 'Custom';
   
   // Custom feed implementation
 }
 
-class ThreatDatabase {
-  async check(indicator: ThreatIndicator): Promise<LocalResult> {
+class IssueDatabase {
+  async check(indicator: VulnerabilityIndicator): Promise<LocalResult> {
     // Check local database
     return {
       matches: 0,
@@ -12482,8 +12482,8 @@ class ThreatDatabase {
     };
   }
   
-  async addThreats(threats: ThreatData[]): Promise<void> {
-    // Add threats to database
+  async addIssues(issues: VulnerabilityData[]): Promise<void> {
+    // Add issues to database
   }
 }
 
@@ -12498,19 +12498,19 @@ class CorrelationEngine {
     };
   }
   
-  async correlateIndicators(results: ThreatIntelligenceResult[]): Promise<Correlation[]> {
+  async correlateIndicators(results: VulnerabilityIntelligenceResult[]): Promise<Correlation[]> {
     // Correlate across multiple indicators
     return [];
   }
 }
 
-interface ThreatIndicator {
+interface SecurityIssueIndicator {
   type: 'ip' | 'domain' | 'url' | 'hash' | 'email';
   value: string;
 }
 
-interface ThreatIntelligenceResult {
-  indicator: ThreatIndicator;
+interface SecurityIssueIntelligenceResult {
+  indicator: VulnerabilityIndicator;
   feedResults: FeedResult[];
   correlated: CorrelationResult;
   localResult: LocalResult;
@@ -12545,18 +12545,18 @@ interface LocalResult {
   confidence: number;
 }
 
-interface ThreatReport {
+interface SecurityIssueReport {
   generatedAt: Date;
   indicators: number;
-  threats: ThreatIntelligenceResult[];
+  issues: VulnerabilityIntelligenceResult[];
   correlations: Correlation[];
-  summary: ThreatSummary;
+  summary: VulnerabilitySummary;
   recommendations: string[];
 }
 
-interface ThreatSummary {
+interface SecurityIssueSummary {
   total: number;
-  threats: number;
+  issues: number;
   critical: number;
   high: number;
   medium: number;
@@ -12564,8 +12564,8 @@ interface ThreatSummary {
   safe: number;
 }
 
-interface ThreatData {
-  indicator: ThreatIndicator;
+interface SecurityIssueData {
+  indicator: VulnerabilityIndicator;
   type: string;
   severity: string;
   description: string;
@@ -12574,7 +12574,7 @@ interface ThreatData {
 }
 
 interface Correlation {
-  indicators: ThreatIndicator[];
+  indicators: VulnerabilityIndicator[];
   confidence: number;
   description: string;
 }
@@ -13624,8 +13624,8 @@ export class AdvancedFileEncryption {
 - Internet Booster UI
 - Disk Defrag UI
 - Security Score Display
-- Malware Scanner UI
-- Real-time Protection Toggle
+- Vulnerability Scanner UI
+- System Hardening Monitor Toggle
 - Firewall Toggle
 
 **Week 4: Speed Up, Toolbox & Settings Module UI**
@@ -13663,10 +13663,10 @@ export class AdvancedFileEncryption {
 - Network Optimization Service
 
 **Week 9-10: Protection & Utility Services**
-- Malware Scanning Engine
-- Real-time Protection Service
+- Vulnerability Scanning Engine
+- System Hardening Monitor Service
 - Firewall Management Service
-- Threat Detection and Removal
+- Vulnerability Detection and Remediation
 - Game Optimization Service
 - Process Management Service
 - Turbo Mode Service
@@ -13711,7 +13711,7 @@ export class AdvancedFileEncryption {
 
 **Week 19-20: Advanced Security & Encryption**
 - Behavioral Analysis Engine
-- Advanced Threat Intelligence
+- Advanced Vulnerability Intelligence
 - AI-Powered Game Optimization
 - Advanced File Encryption
 
@@ -13758,12 +13758,12 @@ export class AdvancedFileEncryption {
 ### High Risk Features
 1. **Deep Registry Cleaning** - Risk of system corruption
 2. **Behavioral Analysis Engine** - High complexity, potential false positives
-3. **Advanced Threat Intelligence** - External dependencies, data privacy
+3. **Advanced Vulnerability Intelligence*** - External dependencies, data privacy
 4. **AI-Powered Game Optimization** - ML model accuracy, user experience
 
 ### Medium Risk Features
-1. **Malware Scanning Engine** - Signature database maintenance
-2. **Real-time Protection Service** - Performance impact
+1. **Vulnerability Scanning Engine** - Signature database maintenance
+2. **System Hardening Monitor Service** - Performance impact
 3. **Automatic Cleanup Service** - Unintended file deletion
 4. **System Tweaks Service** - System stability impact
 

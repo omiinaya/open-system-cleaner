@@ -39,9 +39,9 @@ Advanced SystemCare (ASC) is a comprehensive PC optimization utility developed b
 - **File Shredder**: Permanently deletes sensitive files
 - **Digital Footprint Eraser**: Removes traces of online activities
 
-### Spyware & Malware Removal
-- **Malware Scanner**: Detects and removes malware, spyware, and adware
-- **Real-time Protection**: Monitors system for threats (Pro version)
+### Vulnerability Assessment
+- **Vulnerability Scanner**: Detects and identifies security vulnerabilities and misconfigurations
+- **System Hardening Monitor**: Monitors system for security issues (Pro version)
 - **Browser Protection**: Blocks malicious websites and downloads
 
 ### Security Enhancement
@@ -112,10 +112,10 @@ Advanced SystemCare (ASC) is a comprehensive PC optimization utility developed b
 
 ## Premium/Pro Features
 
-### Real-time Protection
+### System Hardening Monitor
 - **Real-time Optimization**: Continuous system optimization
 - **Active Monitoring**: 24/7 system monitoring
-- **Automatic Threat Blocking**: Real-time security protection
+- **Automatic Issue Blocking**: Real-time security hardening
 
 ### Advanced Optimization
 - **Deep Registry Clean**: More thorough registry cleaning
@@ -170,7 +170,7 @@ Advanced SystemCare (ASC) is a comprehensive PC optimization utility developed b
 |---------|--------------|-------------|
 | Basic System Cleaning | ✅ | ✅ |
 | Registry Cleaning | ✅ | ✅ |
-| Real-time Protection | ❌ | ✅ |
+| System Hardening Monitor | ❌ | ✅ |
 | Automatic Maintenance | ❌ | ✅ |
 | Game Booster | Limited | Full |
 | Priority Support | ❌ | ✅ |

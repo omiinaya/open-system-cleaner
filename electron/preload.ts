@@ -23,8 +23,8 @@ export interface ElectronAPI {
   optimizeRAM: () => Promise<RAMOptimizationResult>;
 
   // Security operations
-  scanMalware: () => Promise<MalwareScanResult>;
-  enableRealTimeProtection: (enabled: boolean) => Promise<ProtectionResult>;
+  scanVulnerabilities: () => Promise<VulnerabilityScanResult>;
+  enableSystemHardeningMonitor: (enabled: boolean) => Promise<ProtectionResult>;
 
   // App operations
   getAppVersion: () => Promise<string>;
@@ -93,9 +93,9 @@ export interface RAMOptimizationResult {
   memoryFreed: number;
 }
 
-export interface MalwareScanResult {
-  threats: string[];
-  totalThreats: number;
+export interface VulnerabilityScanResult {
+  issues: string[];
+  totalIssues: number;
 }
 
 export interface ProtectionResult {
@@ -121,8 +121,8 @@ const api: ElectronAPI = {
   optimizeRAM: () => ipcRenderer.invoke('optimization:optimizeRAM'),
 
   // Security operations
-  scanMalware: () => ipcRenderer.invoke('security:scanMalware'),
-  enableRealTimeProtection: (enabled: boolean) => ipcRenderer.invoke('security:enableRealTimeProtection', enabled),
+  scanVulnerabilities: () => ipcRenderer.invoke('security:scanVulnerabilities'),
+  enableSystemHardeningMonitor: (enabled: boolean) => ipcRenderer.invoke('security:enableSystemHardeningMonitor', enabled),
 
   // App operations
   getAppVersion: () => ipcRenderer.invoke('app:getVersion'),

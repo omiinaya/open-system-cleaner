@@ -58,7 +58,7 @@ const ScanProgress: React.FC<ScanProgressProps> = ({
     protect: {
       color: 'warning' as const,
       icon: Loader2,
-      title: 'Scanning for Threats',
+      title: 'Scanning for Vulnerabilities',
     },
   };
   

@@ -144,12 +144,12 @@ export interface InternetOptimizationSettings {
 
 export interface ProtectModuleConfig extends ModuleConfig {
   realTimeProtection: boolean;
-  malwareScanner: MalwareScannerSettings;
+  vulnerabilityScanner: VulnerabilityScannerSettings;
   browserProtection: BrowserProtectionSettings;
   privacyShield: PrivacyShieldSettings;
 }
 
-export interface MalwareScannerSettings {
+export interface VulnerabilityScannerSettings {
   autoScan: boolean;
   scanSchedule: 'daily' | 'weekly' | 'monthly';
   scanDepth: 'quick' | 'full' | 'custom';
@@ -348,7 +348,7 @@ export interface ElectronAPI {
   optimizeRAM: () => Promise<{ success: boolean; memoryFreed: number }>;
 
   // Security operations
-  scanMalware: () => Promise<{ threats: string[]; totalThreats: number }>;
+  scanVulnerabilities: () => Promise<{ issues: string[]; totalIssues: number }>;
   enableRealTimeProtection: (enabled: boolean) => Promise<{ success: boolean; enabled: boolean }>;
 
   // App operations

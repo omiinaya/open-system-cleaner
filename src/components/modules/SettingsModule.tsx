@@ -208,7 +208,7 @@ const SettingsModule: React.FC = () => {
                         <Shield className="w-5 h-5 text-text-secondary" />
                         <div>
                           <p className="font-medium text-text-primary">Security Alerts</p>
-                          <p className="text-sm text-text-secondary">Notify about security threats</p>
+                          <p className="text-sm text-text-secondary">Notify about security issues</p>
                         </div>
                       </div>
                       <Switch checked={notificationSettings.securityAlerts} onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, securityAlerts: checked })} />

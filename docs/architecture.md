@@ -245,7 +245,7 @@ Protect Module Layout:
 ┌─────────────────────────────────────────┐
 │ Security Status & Real-time Protection  │
 ├─────────────────────────────────────────┤
-│ Malware Scanner: Threats, Scan          │
+│ Vulnerability Scanner: Issues, Scan          │
 │ Browser Protection: Settings, Enable    │
 │ Privacy Shield: Monitoring, Configure   │
 │ Exploit Protection: Status, Fortify     │

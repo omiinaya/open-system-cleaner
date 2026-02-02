@@ -343,11 +343,11 @@ interface NavigationItem {
 
 #### SecurityStatusPanel
 - **Purpose**: Overall security status
-- **Features**: Threat level, protection status
+- **Features**: Issue level, hardening status
 
-#### MalwareScanner
-- **Purpose**: Malware detection and removal
-- **Features**: Scan types, quarantine management
+#### VulnerabilityScanner
+- **Purpose**: Vulnerability detection and assessment
+- **Features**: Scan types, remediation management
 
 #### RealTimeProtection
 - **Purpose**: Real-time security monitoring

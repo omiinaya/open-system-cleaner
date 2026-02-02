@@ -45,7 +45,7 @@ App
 │       ├── Dashboard (Health score, performance charts)
 │       ├── CleanModule (Junk files, registry)
 │       ├── OptimizeModule (Startup, RAM, internet)
-│       ├── ProtectModule (Security, malware)
+│       ├── ProtectModule (Security, vulnerability scanning)
 │       ├── SpeedUpModule (Game booster, performance)
 │       └── ToolboxModule (Utilities, tools)
 └── ModalManager
@@ -162,7 +162,7 @@ npm run electron:pack # Package for distribution
 - System tweaks and optimizations
 
 ### Protect Module
-- Malware and spyware scanner
+- Vulnerability and security scanner
 - Real-time protection monitoring
 - Browser protection settings
 - Security vulnerability analysis

@@ -43,8 +43,8 @@ graph TB
     E3 --> E3C[InternetBooster]
     
     E4 --> E4A[SecurityStatusPanel]
-    E4 --> E4B[MalwareScanner]
-    E4 --> E4C[RealTimeProtection]
+    E4 --> E4B[VulnerabilityScanner]
+    E4 --> E4C[SystemHardeningMonitor]
     
     E5 --> E5A[GameBooster]
     E5 --> E5B[ProcessManager]

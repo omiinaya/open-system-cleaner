@@ -402,8 +402,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   optimizeStartup: () => ipcRenderer.invoke('optimization:optimizeStartup'),
   
   // Security operations
-  scanMalware: () => ipcRenderer.invoke('security:scanMalware'),
-  enableRealTimeProtection: () => ipcRenderer.invoke('security:enableRealTimeProtection'),
+  scanVulnerabilities: () => ipcRenderer.invoke('security:scanVulnerabilities'),
+  enableSystemHardeningMonitor: () => ipcRenderer.invoke('security:enableSystemHardeningMonitor'),
   
   // Event listeners for real-time updates
   onSystemUpdate: (callback: (data: any) => void) => 

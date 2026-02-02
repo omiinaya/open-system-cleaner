@@ -310,15 +310,15 @@ System optimization module for performance tuning.
 ### ProtectModule
 **File:** [`src/components/modules/ProtectModule.tsx`](src/components/modules/ProtectModule.tsx)
 
-Security module for threat protection and privacy.
+Security module for vulnerability protection and privacy.
 
 **Features:**
 - **Security Score**: Large score display with color coding
-- **Malware Scanner**: Quick and Full scan options
-- **Real-time Protection**: Toggle for continuous monitoring
+- **Vulnerability Scanner**: Quick and Full scan options
+- **System Hardening Monitor**: Toggle for continuous monitoring
 - **Firewall**: Toggle for network traffic control
 - **Six Protection Features**: Individual toggles for various protections
-- **Threat Detection**: Alert system for found threats
+- **Vulnerability Detection**: Alert system for found vulnerabilities
 - **Scan Progress**: Real-time scanning with [`ScanProgress`](src/components/common/ScanProgress.tsx)
 
 **Protection Features:**
@@ -334,11 +334,11 @@ Security module for threat protection and privacy.
 - Full Scan (~30-60 minutes) - [`Activity`](src/components/modules/ProtectModule.tsx:138) icon
 
 **Notable Functionality:**
-- Dynamic security score based on threats found
+- Dynamic security score based on vulnerabilities found
 - Status badges (Protected, At Risk, Critical)
 - Pulse animation on warning badges
-- Threat removal workflow
-- Real-time protection status indicator
+- Vulnerability remediation workflow
+- System hardening monitor status indicator
 
 ---
 
@@ -546,7 +546,7 @@ Progress component for scanning operations.
 **Variant Configurations:**
 - clean: Primary color, "Scanning System" title
 - optimize: Success color, "Optimizing System" title
-- protect: Warning color, "Scanning for Threats" title
+- protect: Warning color, "Scanning for Vulnerabilities" title
 
 **Notable Functionality:**
 - Animated dots (400ms interval)
@@ -797,7 +797,7 @@ The OSC UI features a comprehensive system care application with the following k
 - **Real-time Monitoring**: Performance charts and status cards
 - **Scanning Capabilities**: Multiple scan types with progress tracking
 - **Optimization Tools**: RAM optimizer, startup manager, disk defrag
-- **Security Features**: Malware scanner, real-time protection, firewall
+- **Security Features**: Vulnerability scanner, system hardening monitor, firewall
 - **Utility Tools**: Software uninstaller, driver updater, file shredder
 
 ### UI Components
