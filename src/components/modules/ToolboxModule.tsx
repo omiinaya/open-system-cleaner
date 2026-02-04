@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
-import { Package, Download, Trash2, Copy, Scissors, FolderSearch, Wrench, ExternalLink, Check, AlertCircle, Clock, HardDrive, ChevronRight, Star } from 'lucide-react';
+import { Package, Download, Trash2, Copy, Scissors, Wrench, AlertCircle, HardDrive, ChevronRight } from 'lucide-react';
 import Card, { CardHeader, CardContent } from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
-import Progress from '../ui/Progress';
 import { StatCard } from '../common';
 
 interface Software {

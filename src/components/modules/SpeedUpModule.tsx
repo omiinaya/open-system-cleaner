@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
-import { Gamepad2, Activity, List, Zap, Rocket, Gauge, Play, Pause, X, Check, AlertCircle, ChevronRight } from 'lucide-react';
+import { Gamepad2, Activity, List, Zap, Rocket, X, Check } from 'lucide-react';
 import Card, { CardHeader, CardContent } from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';

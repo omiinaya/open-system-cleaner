@@ -5,7 +5,7 @@
   "main": "dist/electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "tsc -p tsconfig.node.json && tsc --noEmit && vite build && electron-builder",
     "preview": "vite preview",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:pack": "electron-builder",

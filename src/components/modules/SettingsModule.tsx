@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
-import { Settings, Bell, Shield, Globe, Moon, Sun, Monitor, Info, Check, ChevronRight, Clock, FileText, Trash2, RefreshCw } from 'lucide-react';
+import { Settings, Bell, Shield, Globe, Moon, Sun, Monitor, Info, Check, Clock, FileText, Trash2, RefreshCw } from 'lucide-react';
 import Card, { CardHeader, CardContent } from '../ui/Card';
-import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import Switch from '../ui/Switch';
 import { useThemeStore } from '../../stores/themeStore';

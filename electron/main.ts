@@ -75,13 +75,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Security: Prevent new window creation
-app.on('web-contents-created', (_event, contents) => {
-  contents.on('new-window', (event) => {
-    event.preventDefault();
-  });
-});
-
 // ============================
 // IPC Handlers - Placeholders
 // ============================
