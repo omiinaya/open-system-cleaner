@@ -39,21 +39,24 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
       sm: {
         track: 'w-8 h-4',
         thumb: 'w-3 h-3',
+        thumbOffset: 'top-0.5 left-0.5',
         translate: 'translate-x-4',
       },
       md: {
         track: 'w-11 h-6',
         thumb: 'w-5 h-5',
+        thumbOffset: 'top-0.5 left-0.5',
         translate: 'translate-x-5',
       },
       lg: {
-        track: 'w-14 h-7',
+        track: 'w-14 h-8',
         thumb: 'w-6 h-6',
-        translate: 'translate-x-7',
+        thumbOffset: 'top-1 left-1',
+        translate: 'translate-x-6',
       },
     };
 
-    const { track, thumb, translate } = sizeClasses[size];
+    const { track, thumb, thumbOffset, translate } = sizeClasses[size];
 
     return (
       <div className={cn('flex items-start gap-3', className)}>
@@ -73,10 +76,12 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             htmlFor={switchId}
             className={cn(
               track,
-              'rounded-full cursor-pointer transition-colors duration-200 ease-in-out',
-              'bg-bg-tertiary border border-border',
+              'rounded-full cursor-pointer transition-all duration-200 ease-in-out',
+              'bg-bg-tertiary border-2 border-border',
               'peer-checked:bg-primary-500 peer-checked:border-primary-500',
               'peer-disabled:opacity-50 peer-disabled:cursor-not-allowed',
+              'hover:border-border-hover',
+              'peer-checked:hover:bg-primary-600 peer-checked:hover:border-primary-600',
               'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
               'dark:focus:ring-offset-bg-primary'
             )}
@@ -84,15 +89,13 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             <span
               className={cn(
                 thumb,
-                'absolute top-0.5 left-0.5',
+                'absolute',
+                thumbOffset,
                 'bg-white rounded-full shadow-sm',
-                'transition-transform duration-200 ease-in-out',
-                'peer-checked:' + translate
+                'transition-all duration-200 ease-in-out',
+                'peer-checked:' + translate,
+                'peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 peer-focus-visible:ring-offset-2'
               )}
-              style={{
-                marginTop: size === 'sm' ? '2px' : size === 'md' ? '2px' : '2px',
-                marginLeft: '2px',
-              }}
             />
           </label>
         </div>
