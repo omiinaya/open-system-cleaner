@@ -19,6 +19,8 @@ import { systemRestoreService } from './services/systemRestore';
 import { undoManager } from './services/undoManager';
 import { fileWatcherService } from './services/fileWatcher';
 import { behavioralAnalyzer } from './services/behavioralAnalyzer';
+import { streamingFileScanner } from './services/streamingFileScanner';
+import { parallelFileProcessor } from './services/workerPool';
 
 // Keep a global reference of the window object to prevent garbage collection
 let mainWindow: BrowserWindow | null = null;
@@ -680,6 +682,145 @@ ipcMain.handle('behavioral:getAll', () => {
   } catch (error) {
     console.error('Error getting behaviors:', error);
     return [];
+  }
+});
+
+// Streaming File Scanner Operations
+ipcMain.handle('streaming:scan', async (_event, { paths, options }) => {
+  try {
+    const result = await streamingFileScanner.scanWithStream(paths, options);
+    return {
+      success: true,
+      ...result,
+    };
+  } catch (error) {
+    console.error('Error in streaming:scan:', error);
+    return {
+      success: false,
+      error: String(error),
+      files: [],
+      stats: {
+        filesScanned: 0,
+        directoriesScanned: 0,
+        totalSize: 0,
+        errors: 1,
+        duration: 0,
+      },
+    };
+  }
+});
+
+ipcMain.handle('streaming:findDuplicates', async (_event, { paths, options }) => {
+  try {
+    const duplicates = await streamingFileScanner.findDuplicatesStream(paths, options);
+    
+    // Convert Map to array for IPC
+    const duplicatesArray = Array.from(duplicates.entries()).map(([hash, files]) => ({
+      hash,
+      files,
+      count: files.length,
+      totalSize: files.reduce((acc, f) => acc + f.size, 0),
+    }));
+
+    return {
+      success: true,
+      duplicates: duplicatesArray,
+      groupCount: duplicatesArray.length,
+      totalDuplicates: duplicatesArray.reduce((acc, g) => acc + g.count, 0),
+    };
+  } catch (error) {
+    console.error('Error in streaming:findDuplicates:', error);
+    return {
+      success: false,
+      error: String(error),
+      duplicates: [],
+      groupCount: 0,
+      totalDuplicates: 0,
+    };
+  }
+});
+
+ipcMain.handle('streaming:getStats', async (_event, { paths, options }) => {
+  try {
+    const stats = await streamingFileScanner.getStreamStats(paths, options);
+    return {
+      success: true,
+      stats,
+    };
+  } catch (error) {
+    console.error('Error in streaming:getStats:', error);
+    return {
+      success: false,
+      error: String(error),
+      stats: {
+        filesScanned: 0,
+        directoriesScanned: 0,
+        totalSize: 0,
+        errors: 1,
+        duration: 0,
+      },
+    };
+  }
+});
+
+// Worker Thread Operations
+ipcMain.handle('workers:hashFiles', async (_event, filePaths: string[]) => {
+  try {
+    const startTime = Date.now();
+    parallelFileProcessor.initialize();
+    
+    const results = await parallelFileProcessor.hashFiles(filePaths);
+    
+    const duration = Date.now() - startTime;
+    console.log(`Worker threads hashed ${filePaths.length} files in ${duration}ms`);
+
+    return {
+      success: true,
+      results,
+      duration,
+      fileCount: filePaths.length,
+    };
+  } catch (error) {
+    console.error('Error in workers:hashFiles:', error);
+    return {
+      success: false,
+      error: String(error),
+      results: [],
+      duration: 0,
+      fileCount: filePaths.length,
+    };
+  }
+});
+
+ipcMain.handle('workers:getStats', () => {
+  try {
+    const stats = parallelFileProcessor.getStats();
+    return {
+      success: true,
+      stats,
+    };
+  } catch (error) {
+    console.error('Error in workers:getStats:', error);
+    return {
+      success: false,
+      error: String(error),
+      stats: null,
+    };
+  }
+});
+
+ipcMain.handle('workers:shutdown', async () => {
+  try {
+    await parallelFileProcessor.shutdown();
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error in workers:shutdown:', error);
+    return {
+      success: false,
+      error: String(error),
+    };
   }
 });
 
