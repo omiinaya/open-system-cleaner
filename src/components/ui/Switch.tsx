@@ -62,11 +62,11 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
   const getTranslateClass = () => {
     switch (size) {
       case 'sm':
-        return 'peer-checked:translate-x-5';
+        return 'peer-checked:translate-x-4';
       case 'lg':
-        return 'peer-checked:translate-x-8';
+        return 'peer-checked:translate-x-7';
       default:
-        return 'peer-checked:translate-x-6';
+        return 'peer-checked:translate-x-5';
     }
   };
 
