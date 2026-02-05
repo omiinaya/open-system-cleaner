@@ -314,6 +314,12 @@ export interface NotificationSettings {
   soundEnabled: boolean;
 }
 
+export interface ScanSettings {
+  autoScan: boolean;
+  scanSchedule: 'daily' | 'weekly' | 'monthly' | 'manual';
+  scanAtStartup: boolean;
+}
+
 export interface PrivacySettings {
   shareUsageData: boolean;
   autoCleanBrowsingData: boolean;

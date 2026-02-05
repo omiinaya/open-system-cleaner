@@ -26,7 +26,7 @@ const createWindow = (): void => {
 
   // Load the app
   if (isDevelopment) {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:5273');
     // Open DevTools in development
     mainWindow.webContents.openDevTools();
   } else {
