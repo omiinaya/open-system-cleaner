@@ -2,6 +2,9 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import si from 'systeminformation';
 import * as os from 'os';
+import { CONSTANTS } from '../constants';
+import { auditLogger } from './auditLogger';
+import { formatBytes } from '../utils/formatters';
 
 const execAsync = promisify(exec);
 
@@ -23,36 +26,27 @@ export interface RAMOptimizationResult {
 }
 
 export class RAMOptimizerService {
-  private blacklistedProcesses = [
-    'System',
-    'System Idle Process',
-    'explorer.exe',
-    'winlogon.exe',
-    'csrss.exe',
-    'smss.exe',
-    'services.exe',
-    'lsass.exe',
-    'svchost.exe',
-    'chrome.exe', // Keep browsers
-    'firefox.exe',
-    'msedge.exe',
-    'code.exe', // Keep editor
-    'electron.exe', // Keep Electron apps
-  ];
+  // Use constants for process lists
+  private blacklistedProcesses = CONSTANTS.PROCESS_WHITELIST;
+  private safeToCloseProcesses = CONSTANTS.PROCESS_BLACKLIST;
 
-  private safeToCloseProcesses = [
-    'notepad.exe',
-    'calc.exe',
-    'mspaint.exe',
-    'cmd.exe',
-    'powershell.exe',
-    'discord.exe',
-    'spotify.exe',
-    'steam.exe',
-    'slack.exe',
-    'teams.exe',
-    'zoom.exe',
-  ];
+  /**
+   * Check if a process is in the whitelist (never kill)
+   */
+  private isWhitelisted(processName: string): boolean {
+    return this.blacklistedProcesses.some(bp => 
+      processName.toLowerCase().includes(bp.toLowerCase())
+    );
+  }
+
+  /**
+   * Check if a process is in the blacklist (safe to kill)
+   */
+  private isBlacklisted(processName: string): boolean {
+    return this.safeToCloseProcesses.some(sp => 
+      processName.toLowerCase().includes(sp.toLowerCase())
+    );
+  }
 
   async getRunningProcesses(): Promise<ProcessInfo[]> {
     try {
@@ -82,15 +76,18 @@ export class RAMOptimizerService {
   } = {}): Promise<RAMOptimizationResult> {
     const { aggressive = false, includeUserApps = false } = options;
     
+    await auditLogger.log('ram_optimization_started', 'ramOptimizer', 'success', {
+      aggressive,
+      includeUserApps,
+    });
+    
     const processes = await this.getRunningProcesses();
     const processesToTerminate: ProcessInfo[] = [];
     
     // Identify processes to terminate
     for (const proc of processes) {
-      // Skip blacklisted processes
-      if (this.blacklistedProcesses.some(bp => 
-        proc.name.toLowerCase().includes(bp.toLowerCase())
-      )) {
+      // Skip whitelisted processes
+      if (this.isWhitelisted(proc.name)) {
         continue;
       }
 
@@ -100,12 +97,8 @@ export class RAMOptimizerService {
       }
 
       // Only terminate safe-to-close processes unless includeUserApps
-      if (!includeUserApps) {
-        if (!this.safeToCloseProcesses.some(sp => 
-          proc.name.toLowerCase().includes(sp.toLowerCase())
-        )) {
-          continue;
-        }
+      if (!includeUserApps && !this.isBlacklisted(proc.name)) {
+        continue;
       }
 
       // Only terminate high memory usage processes
@@ -118,6 +111,7 @@ export class RAMOptimizerService {
 
     let memoryFreed = 0;
     let terminatedCount = 0;
+    const errors: string[] = [];
 
     // Terminate processes
     for (const proc of processesToTerminate.slice(0, 10)) { // Limit to 10 processes
@@ -129,8 +123,22 @@ export class RAMOptimizerService {
         }
         memoryFreed += proc.memory;
         terminatedCount++;
+        
+        await auditLogger.log('process_terminated', 'ramOptimizer', 'success', {
+          pid: proc.pid,
+          name: proc.name,
+          memory: proc.memory,
+        });
       } catch (error) {
-        console.error(`Failed to terminate process ${proc.name} (${proc.pid}):`, error);
+        const errorMsg = `Failed to terminate process ${proc.name} (${proc.pid}): ${error}`;
+        console.error(errorMsg);
+        errors.push(errorMsg);
+        
+        await auditLogger.log('process_terminate_failed', 'ramOptimizer', 'failure', {
+          pid: proc.pid,
+          name: proc.name,
+          error: String(error),
+        });
       }
     }
 
@@ -144,12 +152,20 @@ export class RAMOptimizerService {
       console.error('Error clearing system caches:', error);
     }
 
-    return {
+    const result: RAMOptimizationResult = {
       success: terminatedCount > 0,
       memoryFreed,
       processesTerminated: terminatedCount,
       processes: processesToTerminate.slice(0, terminatedCount),
     };
+
+    await auditLogger.log('ram_optimization_completed', 'ramOptimizer', result.success ? 'success' : 'warning', {
+      memoryFreed,
+      processesTerminated: terminatedCount,
+      errorCount: errors.length,
+    });
+
+    return result;
   }
 
   async getMemoryInfo(): Promise<{

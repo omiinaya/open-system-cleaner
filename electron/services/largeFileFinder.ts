@@ -1,6 +1,11 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
+import { shell } from 'electron';
+import { CONSTANTS } from '../constants';
+import { formatBytes } from '../utils/formatters';
+import { auditLogger } from './auditLogger';
+import { sanitizeFilePath, isNonEmptyArray } from '../types/guards';
 
 export interface LargeFile {
   path: string;
@@ -184,41 +189,222 @@ export class LargeFileFinderService {
     }
   }
 
-  async deleteFiles(filePaths: string[]): Promise<{ success: boolean; freedSpace: number }> {
+  formatSize(bytes: number): string {
+    return formatBytes(bytes);
+  }
+
+  /**
+   * Get preview information for a file
+   */
+  async getFilePreview(filePath: string): Promise<{
+    type: 'image' | 'text' | 'video' | 'audio' | 'document' | 'archive' | 'binary';
+    preview: string;
+    canPreview: boolean;
+    metadata: {
+      size: number;
+      created: Date;
+      modified: Date;
+      accessed: Date;
+    };
+  }> {
+    try {
+      const stats = await fs.stat(filePath);
+      const ext = path.extname(filePath).toLowerCase();
+      
+      const metadata = {
+        size: stats.size,
+        created: stats.birthtime,
+        modified: stats.mtime,
+        accessed: stats.atime,
+      };
+
+      // Image files
+      if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].includes(ext)) {
+        return {
+          type: 'image',
+          preview: filePath, // Return path for image preview
+          canPreview: true,
+          metadata,
+        };
+      }
+
+      // Text files
+      if (['.txt', '.log', '.md', '.json', '.xml', '.csv', '.js', '.ts', '.css', '.html'].includes(ext)) {
+        try {
+          // Read first 2000 characters
+          const content = await fs.readFile(filePath, 'utf-8');
+          return {
+            type: 'text',
+            preview: content.slice(0, 2000) + (content.length > 2000 ? '\n... (truncated)' : ''),
+            canPreview: true,
+            metadata,
+          };
+        } catch {
+          return {
+            type: 'text',
+            preview: 'Unable to read text content',
+            canPreview: false,
+            metadata,
+          };
+        }
+      }
+
+      // Video files
+      if (['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm'].includes(ext)) {
+        return {
+          type: 'video',
+          preview: filePath,
+          canPreview: true,
+          metadata,
+        };
+      }
+
+      // Audio files
+      if (['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma'].includes(ext)) {
+        return {
+          type: 'audio',
+          preview: filePath,
+          canPreview: true,
+          metadata,
+        };
+      }
+
+      // Document files
+      if (['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(ext)) {
+        return {
+          type: 'document',
+          preview: `${ext.toUpperCase()} document`,
+          canPreview: ext === '.pdf', // Only PDFs can be previewed easily
+          metadata,
+        };
+      }
+
+      // Archive files
+      if (['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2'].includes(ext)) {
+        return {
+          type: 'archive',
+          preview: `${ext.toUpperCase()} archive`,
+          canPreview: false,
+          metadata,
+        };
+      }
+
+      // Default: binary
+      return {
+        type: 'binary',
+        preview: `${ext.toUpperCase()} file (${formatBytes(stats.size)})`,
+        canPreview: false,
+        metadata,
+      };
+    } catch (error) {
+      return {
+        type: 'binary',
+        preview: 'Unable to preview file',
+        canPreview: false,
+        metadata: {
+          size: 0,
+          created: new Date(),
+          modified: new Date(),
+          accessed: new Date(),
+        },
+      };
+    }
+  }
+
+  /**
+   * Delete files with validation and safety checks
+   */
+  async deleteFiles(filePaths: string[]): Promise<{ 
+    success: boolean; 
+    freedSpace: number; 
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+
+    // Validate input
+    if (!isNonEmptyArray<string>(filePaths)) {
+      return { success: false, freedSpace: 0, errors: ['Invalid input: filePaths must be a non-empty array'] };
+    }
+
+    // Sanitize paths
+    const sanitizedPaths = filePaths.map(p => sanitizeFilePath(p));
+
     let freedSpace = 0;
     let success = true;
 
-    for (const filePath of filePaths) {
+    for (const filePath of sanitizedPaths) {
+      // Check if file is protected
+      const ext = path.extname(filePath).toLowerCase();
+      if (CONSTANTS.PROTECTED_EXTENSIONS.includes(ext)) {
+        errors.push(`Protected file skipped: ${filePath}`);
+        continue;
+      }
+
       try {
         const stats = await fs.stat(filePath);
         await fs.unlink(filePath);
         freedSpace += stats.size;
+
+        await auditLogger.log('large_file_deleted', 'largeFileFinder', 'success', {
+          filePath,
+          size: stats.size,
+        });
       } catch (error) {
-        console.error(`Failed to delete ${filePath}:`, error);
+        const errorMsg = `Failed to delete ${filePath}: ${error}`;
+        errors.push(errorMsg);
         success = false;
+
+        await auditLogger.log('large_file_delete_failed', 'largeFileFinder', 'failure', {
+          filePath,
+          error: String(error),
+        });
       }
     }
 
-    return { success, freedSpace };
+    return { success: success && errors.length === 0, freedSpace, errors };
   }
 
-  async moveToTrash(filePaths: string[]): Promise<{ success: boolean; freedSpace: number }> {
-    // For now, just delete the files
-    // In a real implementation, you'd move them to the system trash/recycle bin
-    return await this.deleteFiles(filePaths);
-  }
+  /**
+   * Move files to trash/recycle bin
+   */
+  async moveToTrash(filePaths: string[]): Promise<{ 
+    success: boolean; 
+    freedSpace: number;
+    errors: string[];
+  }> {
+    const errors: string[] = [];
 
-  formatSize(bytes: number): string {
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    let size = bytes;
-    let unitIndex = 0;
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
+    if (!isNonEmptyArray<string>(filePaths)) {
+      return { success: false, freedSpace: 0, errors: ['Invalid input: filePaths must be a non-empty array'] };
     }
 
-    return `${size.toFixed(2)} ${units[unitIndex]}`;
+    const sanitizedPaths = filePaths.map(p => sanitizeFilePath(p));
+    let freedSpace = 0;
+    let success = true;
+
+    for (const filePath of sanitizedPaths) {
+      try {
+        const stats = await fs.stat(filePath);
+        await shell.trashItem(filePath);
+        freedSpace += stats.size;
+
+        await auditLogger.log('large_file_moved_to_trash', 'largeFileFinder', 'success', {
+          filePath,
+          size: stats.size,
+        });
+      } catch (error) {
+        const errorMsg = `Failed to move ${filePath} to trash: ${error}`;
+        errors.push(errorMsg);
+        success = false;
+
+        await auditLogger.log('large_file_trash_failed', 'largeFileFinder', 'failure', {
+          filePath,
+          error: String(error),
+        });
+      }
+    }
+
+    return { success: success && errors.length === 0, freedSpace, errors };
   }
 }
 

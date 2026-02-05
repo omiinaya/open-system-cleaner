@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { auditLogger } from './auditLogger';
 
 const execAsync = promisify(exec);
 
@@ -177,6 +178,8 @@ export class StartupManagerService {
         path.join(os.homedir(), 'Library', 'LaunchAgents'),
         '/Library/LaunchAgents',
         '/Library/LaunchDaemons',
+        '/System/Library/LaunchAgents',
+        '/System/Library/LaunchDaemons',
       ];
 
       for (const dir of launchDirs) {
@@ -186,29 +189,133 @@ export class StartupManagerService {
           for (const entry of entries) {
             if (entry.endsWith('.plist')) {
               const fullPath = path.join(dir, entry);
-              const content = await fs.readFile(fullPath, 'utf-8');
               
-              programs.push({
-                id: fullPath,
-                name: entry.replace('.plist', ''),
-                publisher: 'Unknown',
-                command: content.includes('ProgramArguments') ? 'LaunchAgent' : 'LaunchDaemon',
-                location: dir,
-                enabled: true,
-                impact: 'medium',
-                startupType: 'folder',
-              });
+              try {
+                // Try to parse plist file for better info
+                const plistInfo = await this.parsePlistFile(fullPath);
+                
+                programs.push({
+                  id: fullPath,
+                  name: plistInfo.label || entry.replace('.plist', ''),
+                  publisher: this.extractPublisherFromPlist(plistInfo),
+                  command: plistInfo.program || plistInfo.programArguments?.[0] || 'LaunchAgent',
+                  location: dir,
+                  enabled: await this.isLaunchAgentEnabled(fullPath),
+                  impact: this.calculateMacImpact(plistInfo),
+                  startupType: dir.includes('Daemon') ? 'task' : 'folder',
+                });
+              } catch {
+                // If parsing fails, add basic info
+                programs.push({
+                  id: fullPath,
+                  name: entry.replace('.plist', ''),
+                  publisher: 'Unknown',
+                  command: 'LaunchAgent/LaunchDaemon',
+                  location: dir,
+                  enabled: true,
+                  impact: 'medium',
+                  startupType: dir.includes('Daemon') ? 'task' : 'folder',
+                });
+              }
             }
           }
-        } catch (error) {
-          // Directory might not exist
+        } catch {
+          // Directory might not exist or not be accessible
         }
       }
+
+      // Also check Login Items using osascript
+      try {
+        const { stdout } = await execAsync(
+          'osascript -e \'tell application "System Events" to get the name of every login item\''
+        );
+        const loginItems = stdout.trim().split(', ');
+        
+        for (const item of loginItems) {
+          if (item && item !== 'missing value') {
+            programs.push({
+              id: `loginitem-${item}`,
+              name: item,
+              publisher: 'User Login Item',
+              command: item,
+              location: 'Login Items',
+              enabled: true,
+              impact: 'medium',
+              startupType: 'folder',
+            });
+          }
+        }
+      } catch {
+        // May not have permission to access login items
+      }
+
+      await auditLogger.log('mac_startup_scan', 'startupManager', 'success', {
+        programsFound: programs.length,
+      });
     } catch (error) {
       console.error('Error getting macOS startup programs:', error);
+      await auditLogger.log('mac_startup_scan_failed', 'startupManager', 'failure', {
+        error: String(error),
+      });
     }
 
     return programs;
+  }
+
+  /**
+   * Parse a plist file to extract information
+   */
+  private async parsePlistFile(plistPath: string): Promise<any> {
+    try {
+      // Use plutil to convert plist to JSON
+      const { stdout } = await execAsync(`plutil -convert json -o - "${plistPath}"`);
+      return JSON.parse(stdout);
+    } catch {
+      // Fallback: try to read as binary plist (simplified)
+      return {};
+    }
+  }
+
+  /**
+   * Extract publisher from plist info
+   */
+  private extractPublisherFromPlist(plistInfo: any): string {
+    // Try to extract from various plist fields
+    if (plistInfo.CFBundleIdentifier) {
+      const parts = plistInfo.CFBundleIdentifier.split('.');
+      if (parts.length > 1) {
+        return parts[1]; // Usually the company name (com.company.app)
+      }
+    }
+    return 'Unknown';
+  }
+
+  /**
+   * Calculate impact for macOS launch agents
+   */
+  private calculateMacImpact(plistInfo: any): 'low' | 'medium' | 'high' {
+    // Check for high impact indicators
+    if (plistInfo.KeepAlive === true) {
+      return 'high';
+    }
+    if (plistInfo.RunAtLoad === true) {
+      return 'medium';
+    }
+    return 'low';
+  }
+
+  /**
+   * Check if a launch agent is currently enabled
+   */
+  private async isLaunchAgentEnabled(plistPath: string): Promise<boolean> {
+    try {
+      // Check if the service is loaded
+      const label = path.basename(plistPath, '.plist');
+      const { stdout } = await execAsync(`launchctl list | grep "${label}"`);
+      return stdout.trim().length > 0;
+    } catch {
+      return true; // Assume enabled if we can't check
+    }
   }
 
   private async getLinuxStartupPrograms(): Promise<StartupProgram[]> {

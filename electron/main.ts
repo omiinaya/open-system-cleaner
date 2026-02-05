@@ -14,6 +14,11 @@ import { softwareUninstallerService } from './services/softwareUninstaller';
 import { fileShredderService } from './services/fileShredder';
 import { gameModeService } from './services/gameMode';
 import { duplicateFinderService } from './services/duplicateFinder';
+import { registryBackupService } from './services/registryBackup';
+import { systemRestoreService } from './services/systemRestore';
+import { undoManager } from './services/undoManager';
+import { fileWatcherService } from './services/fileWatcher';
+import { behavioralAnalyzer } from './services/behavioralAnalyzer';
 
 // Keep a global reference of the window object to prevent garbage collection
 let mainWindow: BrowserWindow | null = null;
@@ -104,13 +109,38 @@ app.on('window-all-closed', () => {
 
 // System Information
 ipcMain.handle('system:getInfo', async () => {
-  return await systemMetricsService.getMetrics();
+  try {
+    return await systemMetricsService.getMetrics();
+  } catch (error) {
+    console.error('Error in system:getInfo:', error);
+    return {
+      error: 'Failed to get system info',
+      cpu: { usage: 0, cores: 0, speed: 0, model: 'Unknown' },
+      memory: { total: 0, used: 0, free: 0, percentage: 0 },
+      disk: { total: 0, used: 0, free: 0, drives: [] },
+      network: { upload: 0, download: 0, interface: 'unknown' },
+    };
+  }
 });
 
 // Health Score Calculation
 ipcMain.handle('system:getHealthScore', async (_event, factors) => {
-  const metrics = await systemMetricsService.getMetrics();
-  return healthScoreService.calculateHealthScore(metrics, factors);
+  try {
+    const metrics = await systemMetricsService.getMetrics();
+    return healthScoreService.calculateHealthScore(metrics, factors);
+  } catch (error) {
+    console.error('Error in system:getHealthScore:', error);
+    return {
+      score: 0,
+      status: 'unknown',
+      recommendations: ['Unable to calculate health score'],
+    };
+  }
+});
+
+// Health Check
+ipcMain.handle('system:performHealthCheck', async () => {
+  return await systemMetricsService.performHealthCheck();
 });
 
 // Historical Data
@@ -120,15 +150,76 @@ ipcMain.handle('system:getHistoricalData', async (_event, timeRange: '1h' | '24h
 
 // Cleanup Operations
 ipcMain.handle('cleanup:scanJunkFiles', async () => {
-  return await junkFileScanner.scan();
+  try {
+    return await junkFileScanner.scan();
+  } catch (error) {
+    console.error('Error in cleanup:scanJunkFiles:', error);
+    return { 
+      success: false, 
+      error: 'Scan failed',
+      files: [], 
+      totalSize: 0, 
+      categoryBreakdown: {} 
+    };
+  }
 });
 
-ipcMain.handle('cleanup:cleanJunkFiles', async (_event, paths: string[]) => {
-  return await junkFileScanner.cleanFiles(paths);
+ipcMain.handle('cleanup:cleanJunkFiles', async (_event, args) => {
+  try {
+    // Validate input
+    if (!args || typeof args !== 'object') {
+      return { 
+        success: false, 
+        error: 'Invalid arguments',
+        freedSpace: 0,
+        errors: ['Arguments must be an object']
+      };
+    }
+
+    const { paths, options } = args;
+    
+    if (!Array.isArray(paths)) {
+      return { 
+        success: false, 
+        error: 'Invalid paths: must be an array',
+        freedSpace: 0,
+        errors: ['Paths must be an array']
+      };
+    }
+
+    return await junkFileScanner.cleanFiles(paths, options);
+  } catch (error) {
+    console.error('Error in cleanup:cleanJunkFiles:', error);
+    return { 
+      success: false, 
+      error: String(error),
+      freedSpace: 0,
+      errors: [String(error)]
+    };
+  }
 });
 
 ipcMain.handle('cleanup:cleanJunkFilesByCategory', async (_event, category: 'temp' | 'cache' | 'logs' | 'thumbnails' | 'recycle') => {
-  return await junkFileScanner.cleanByCategory(category);
+  try {
+    // Validate category
+    const validCategories = ['temp', 'cache', 'logs', 'thumbnails', 'recycle'];
+    if (!validCategories.includes(category)) {
+      return { 
+        success: false, 
+        error: `Invalid category: ${category}. Must be one of: ${validCategories.join(', ')}`,
+        freedSpace: 0 
+      };
+    }
+
+    return await junkFileScanner.cleanByCategory(category);
+  } catch (error) {
+    console.error('Error in cleanup:cleanJunkFilesByCategory:', error);
+    return { 
+      success: false, 
+      error: String(error),
+      freedSpace: 0 
+    };
+  }
 });
 
 // Privacy Sweep Operations
@@ -150,11 +241,81 @@ ipcMain.handle('privacy:cleanByBrowser', async (_event, browserName: string) => 
 
 // Large File Finder Operations
 ipcMain.handle('files:scanLargeFiles', async (_event, options) => {
-  return await largeFileFinderService.scan(options);
+  try {
+    return await largeFileFinderService.scan(options);
+  } catch (error) {
+    console.error('Error in files:scanLargeFiles:', error);
+    return {
+      files: [],
+      totalSize: 0,
+      count: 0,
+      error: String(error),
+    };
+  }
+});
+
+ipcMain.handle('files:getPreview', async (_event, filePath: string) => {
+  try {
+    if (!filePath || typeof filePath !== 'string') {
+      return {
+        error: 'Invalid file path',
+        type: 'binary',
+        preview: '',
+        canPreview: false,
+        metadata: null,
+      };
+    }
+    return await largeFileFinderService.getFilePreview(filePath);
+  } catch (error) {
+    console.error('Error in files:getPreview:', error);
+    return {
+      error: String(error),
+      type: 'binary',
+      preview: '',
+      canPreview: false,
+      metadata: null,
+    };
+  }
 });
 
 ipcMain.handle('files:deleteLargeFiles', async (_event, filePaths: string[]) => {
-  return await largeFileFinderService.deleteFiles(filePaths);
+  try {
+    if (!Array.isArray(filePaths)) {
+      return {
+        success: false,
+        freedSpace: 0,
+        errors: ['Invalid input: filePaths must be an array'],
+      };
+    }
+    return await largeFileFinderService.deleteFiles(filePaths);
+  } catch (error) {
+    console.error('Error in files:deleteLargeFiles:', error);
+    return {
+      success: false,
+      freedSpace: 0,
+      errors: [String(error)],
+    };
+  }
+});
+
+ipcMain.handle('files:moveToTrash', async (_event, filePaths: string[]) => {
+  try {
+    if (!Array.isArray(filePaths)) {
+      return {
+        success: false,
+        freedSpace: 0,
+        errors: ['Invalid input: filePaths must be an array'],
+      };
+    }
+    return await largeFileFinderService.moveToTrash(filePaths);
+  } catch (error) {
+    console.error('Error in files:moveToTrash:', error);
+    return {
+      success: false,
+      freedSpace: 0,
+      errors: [String(error)],
+    };
+  }
 });
 
 ipcMain.handle('cleanup:scanRegistry', async () => {
@@ -322,6 +483,204 @@ ipcMain.handle('duplicateFinder:delete', async (_event, filePaths: string[]) => 
 
 ipcMain.handle('duplicateFinder:moveToTrash', async (_event, filePaths: string[]) => {
   return await duplicateFinderService.moveDuplicatesToTrash(filePaths);
+});
+
+// Registry Backup Operations
+ipcMain.handle('registry:createBackup', async (_event, description: string) => {
+  try {
+    return await registryBackupService.createBackup(description);
+  } catch (error) {
+    console.error('Error creating registry backup:', error);
+    return {
+      success: false,
+      error: String(error),
+    };
+  }
+});
+
+ipcMain.handle('registry:listBackups', async () => {
+  try {
+    return await registryBackupService.listBackups();
+  } catch (error) {
+    console.error('Error listing registry backups:', error);
+    return [];
+  }
+});
+
+ipcMain.handle('registry:restoreBackup', async (_event, backupId: string) => {
+  try {
+    return await registryBackupService.restoreBackup(backupId);
+  } catch (error) {
+    console.error('Error restoring registry backup:', error);
+    return false;
+  }
+});
+
+ipcMain.handle('registry:deleteBackup', async (_event, backupId: string) => {
+  try {
+    return await registryBackupService.deleteBackup(backupId);
+  } catch (error) {
+    console.error('Error deleting registry backup:', error);
+    return false;
+  }
+});
+
+// System Restore Operations
+ipcMain.handle('systemRestore:create', async (_event, description: string) => {
+  try {
+    return await systemRestoreService.createRestorePoint(description);
+  } catch (error) {
+    console.error('Error creating system restore point:', error);
+    return {
+      success: false,
+      message: String(error),
+    };
+  }
+});
+
+ipcMain.handle('systemRestore:list', async () => {
+  try {
+    return await systemRestoreService.listRestorePoints();
+  } catch (error) {
+    console.error('Error listing restore points:', error);
+    return [];
+  }
+});
+
+ipcMain.handle('systemRestore:checkAvailable', async () => {
+  try {
+    return await systemRestoreService.isSystemRestoreAvailable();
+  } catch {
+    return false;
+  }
+});
+
+// Undo Manager Operations
+ipcMain.handle('undo:canUndo', () => {
+  return undoManager.canUndo();
+});
+
+ipcMain.handle('undo:canRedo', () => {
+  return undoManager.canRedo();
+});
+
+ipcMain.handle('undo:undo', async () => {
+  try {
+    return await undoManager.undo();
+  } catch (error) {
+    console.error('Error undoing action:', error);
+    return {
+      success: false,
+      message: String(error),
+    };
+  }
+});
+
+ipcMain.handle('undo:redo', async () => {
+  try {
+    return await undoManager.redo();
+  } catch (error) {
+    console.error('Error redoing action:', error);
+    return {
+      success: false,
+      message: String(error),
+    };
+  }
+});
+
+ipcMain.handle('undo:getHistory', () => {
+  return {
+    undoStack: undoManager.getUndoStack(),
+    redoStack: undoManager.getRedoStack(),
+  };
+});
+
+ipcMain.handle('undo:clear', async () => {
+  try {
+    await undoManager.clearHistory();
+    return true;
+  } catch (error) {
+    console.error('Error clearing history:', error);
+    return false;
+  }
+});
+
+// File Watcher Operations
+ipcMain.handle('fileWatcher:start', async (_event, paths: string[]) => {
+  try {
+    fileWatcherService.startWatching(paths);
+    return { success: true };
+  } catch (error) {
+    console.error('Error starting file watcher:', error);
+    return {
+      success: false,
+      error: String(error),
+    };
+  }
+});
+
+ipcMain.handle('fileWatcher:stop', () => {
+  fileWatcherService.stopWatching();
+  return { success: true };
+});
+
+ipcMain.handle('fileWatcher:isRunning', () => {
+  return fileWatcherService.isRunning();
+});
+
+ipcMain.handle('fileWatcher:getStats', () => {
+  return fileWatcherService.getActivityStats();
+});
+
+// Behavioral Analysis Operations
+ipcMain.handle('behavioral:start', () => {
+  try {
+    behavioralAnalyzer.startMonitoring();
+    return { success: true };
+  } catch (error) {
+    console.error('Error starting behavioral analysis:', error);
+    return {
+      success: false,
+      error: String(error),
+    };
+  }
+});
+
+ipcMain.handle('behavioral:stop', () => {
+  try {
+    behavioralAnalyzer.stopMonitoring();
+    return { success: true };
+  } catch (error) {
+    console.error('Error stopping behavioral analysis:', error);
+    return {
+      success: false,
+      error: String(error),
+    };
+  }
+});
+
+ipcMain.handle('behavioral:analyze', (_event, pid: number) => {
+  try {
+    return behavioralAnalyzer.analyzeProcess(pid);
+  } catch (error) {
+    console.error('Error analyzing process:', error);
+    return {
+      isMalicious: false,
+      confidence: 0,
+      threatLevel: 'low',
+      reasons: [],
+      recommendedAction: 'ignore',
+    };
+  }
+});
+
+ipcMain.handle('behavioral:getAll', () => {
+  try {
+    return behavioralAnalyzer.getAllBehaviors();
+  } catch (error) {
+    console.error('Error getting behaviors:', error);
+    return [];
+  }
 });
 
 console.log('Electron main process initialized');

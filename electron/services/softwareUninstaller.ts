@@ -2,6 +2,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as os from 'os';
 import * as path from 'path';
+import * as fs from 'fs/promises';
+import { auditLogger } from './auditLogger';
 
 const execAsync = promisify(exec);
 
@@ -170,52 +172,223 @@ export class SoftwareUninstallerService {
     return programs;
   }
 
+  private async detectPackageManager(): Promise<'apt' | 'dnf' | 'pacman' | 'snap' | 'flatpak' | null> {
+    const managers = [
+      { cmd: 'apt-get', name: 'apt' as const },
+      { cmd: 'dnf', name: 'dnf' as const },
+      { cmd: 'pacman', name: 'pacman' as const },
+      { cmd: 'snap', name: 'snap' as const },
+      { cmd: 'flatpak', name: 'flatpak' as const },
+    ];
+
+    for (const manager of managers) {
+      try {
+        await execAsync(`which ${manager.cmd}`);
+        return manager.name;
+      } catch {
+        continue;
+      }
+    }
+    
+    return null;
+  }
+
   private async getLinuxPrograms(): Promise<InstalledProgram[]> {
     const programs: InstalledProgram[] = [];
 
     try {
-      // Use dpkg for Debian-based or rpm for RedHat-based
-      let command = '';
+      const packageManager = await this.detectPackageManager();
       
-      try {
-        await execAsync('which dpkg');
-        command = 'dpkg-query -W -f=\'${Package}|${Version}|${Installed-Size}\n\'';
-      } catch {
-        try {
-          await execAsync('which rpm');
-          command = 'rpm -qa --queryformat "%{NAME}|%{VERSION}|%{SIZE}\n"';
-        } catch {
-          return programs;
-        }
+      if (!packageManager) {
+        console.warn('No supported package manager found');
+        return programs;
       }
 
-      const { stdout } = await execAsync(command);
+      await auditLogger.log('linux_package_scan', 'softwareUninstaller', 'success', {
+        packageManager,
+      });
+
+      switch (packageManager) {
+        case 'apt':
+          programs.push(...await this.getAptPackages());
+          break;
+        case 'dnf':
+          programs.push(...await this.getDnfPackages());
+          break;
+        case 'pacman':
+          programs.push(...await this.getPacmanPackages());
+          break;
+        case 'snap':
+          programs.push(...await this.getSnapPackages());
+          break;
+        case 'flatpak':
+          programs.push(...await this.getFlatpakPackages());
+          break;
+      }
+    } catch (error) {
+      console.error('Error getting Linux programs:', error);
+      await auditLogger.log('linux_package_scan_failed', 'softwareUninstaller', 'failure', {
+        error: String(error),
+      });
+    }
+
+    return programs;
+  }
+
+  private async getAptPackages(): Promise<InstalledProgram[]> {
+    const programs: InstalledProgram[] = [];
+    try {
+      const { stdout } = await execAsync("dpkg-query -W -f='${Package}|${Version}|${Installed-Size}\n'");
       const lines = stdout.split('\n');
 
       for (const line of lines) {
         const parts = line.split('|');
         if (parts.length >= 3) {
           const [name, version, sizeStr] = parts;
-          const size = parseInt(sizeStr, 10) * 1024; // Convert KB to bytes
+          const size = parseInt(sizeStr, 10) * 1024;
 
           programs.push({
-            id: name,
+            id: `apt:${name}`,
             name,
-            publisher: 'Unknown',
+            publisher: 'Debian/Ubuntu Repository',
             version,
             installDate: 'Unknown',
             size,
             installLocation: '',
-            uninstallString: process.platform === 'linux' && command.includes('dpkg') 
-              ? `sudo apt-get remove ${name}` 
-              : `sudo rpm -e ${name}`,
+            uninstallString: `sudo apt-get remove ${name}`,
           });
         }
       }
     } catch (error) {
-      console.error('Error getting Linux programs:', error);
+      console.error('Error getting apt packages:', error);
     }
+    return programs;
+  }
 
+  private async getDnfPackages(): Promise<InstalledProgram[]> {
+    const programs: InstalledProgram[] = [];
+    try {
+      const { stdout } = await execAsync('rpm -qa --queryformat "%{NAME}|%{VERSION}|%{SIZE}\n"');
+      const lines = stdout.split('\n');
+
+      for (const line of lines) {
+        const parts = line.split('|');
+        if (parts.length >= 3) {
+          const [name, version, sizeStr] = parts;
+          const size = parseInt(sizeStr, 10);
+
+          programs.push({
+            id: `dnf:${name}`,
+            name,
+            publisher: 'Fedora/RHEL Repository',
+            version,
+            installDate: 'Unknown',
+            size,
+            installLocation: '',
+            uninstallString: `sudo dnf remove ${name}`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error getting dnf packages:', error);
+    }
+    return programs;
+  }
+
+  private async getPacmanPackages(): Promise<InstalledProgram[]> {
+    const programs: InstalledProgram[] = [];
+    try {
+      const { stdout } = await execAsync("pacman -Q --format '%n|%v|%m\n'");
+      const lines = stdout.split('\n');
+
+      for (const line of lines) {
+        const parts = line.split('|');
+        if (parts.length >= 2) {
+          const [name, version] = parts;
+          
+          programs.push({
+            id: `pacman:${name}`,
+            name,
+            publisher: 'Arch Repository',
+            version,
+            installDate: 'Unknown',
+            size: 0, // Would need additional command to get size
+            installLocation: '',
+            uninstallString: `sudo pacman -R ${name}`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error getting pacman packages:', error);
+    }
+    return programs;
+  }
+
+  private async getSnapPackages(): Promise<InstalledProgram[]> {
+    const programs: InstalledProgram[] = [];
+    try {
+      const { stdout } = await execAsync("snap list | awk 'NR>1 {print $1\"|\"$2\"|\"$6}'");
+      const lines = stdout.split('\n');
+
+      for (const line of lines) {
+        const parts = line.split('|');
+        if (parts.length >= 2) {
+          const [name, version, notes] = parts;
+          
+          programs.push({
+            id: `snap:${name}`,
+            name,
+            publisher: notes || 'Snap Store',
+            version,
+            installDate: 'Unknown',
+            size: 0, // Snap doesn't expose size easily
+            installLocation: `/snap/${name}`,
+            uninstallString: `sudo snap remove ${name}`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error getting snap packages:', error);
+    }
+    return programs;
+  }
+
+  private async getFlatpakPackages(): Promise<InstalledProgram[]> {
+    const programs: InstalledProgram[] = [];
+    try {
+      const { stdout } = await execAsync("flatpak list --app --columns=application,version,size,origin | tail -n +1");
+      const lines = stdout.split('\n');
+
+      for (const line of lines) {
+        const parts = line.split('\t');
+        if (parts.length >= 3) {
+          const [id, version, sizeStr, origin] = parts;
+          
+          // Parse size (usually in MB or GB)
+          let size = 0;
+          if (sizeStr) {
+            if (sizeStr.includes('GB')) {
+              size = parseFloat(sizeStr) * 1024 * 1024 * 1024;
+            } else if (sizeStr.includes('MB')) {
+              size = parseFloat(sizeStr) * 1024 * 1024;
+            }
+          }
+          
+          programs.push({
+            id: `flatpak:${id}`,
+            name: id.split('.').pop() || id,
+            publisher: origin || 'Flathub',
+            version: version || 'Unknown',
+            installDate: 'Unknown',
+            size,
+            installLocation: '',
+            uninstallString: `flatpak uninstall ${id}`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error getting flatpak packages:', error);
+    }
     return programs;
   }
 
