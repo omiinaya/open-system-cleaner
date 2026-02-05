@@ -1,103 +1,103 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-export interface SwitchProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
+export interface SwitchProps {
+  checked?: boolean;
+  onChange?: (checked: boolean) => void;
   size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  id?: string;
+  className?: string;
   label?: string;
   description?: string;
-  checked?: boolean;
-  defaultChecked?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
 }
 
 const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
   (
     {
+      checked,
+      onChange,
       size = 'md',
+      disabled = false,
+      id,
+      className,
       label,
       description,
-      checked,
-      defaultChecked,
-      onCheckedChange,
-      className,
-      disabled,
-      onChange,
-      id,
-      ...props
     },
     ref
   ) => {
     const switchId = id || React.useId();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange?.(e);
-      onCheckedChange?.(e.target.checked);
-    };
-
-    const sizeClasses = {
+    const sizeConfig = {
       sm: {
-        track: 'w-8 h-4',
-        thumb: 'w-3 h-3',
-        thumbOffset: 'top-0.5 left-0.5',
-        translate: 'translate-x-4',
+        trackWidth: 'w-8',
+        trackHeight: 'h-4',
+        thumbSize: 'w-3 h-3',
+        thumbTranslate: 'translate-x-4',
+        thumbPosition: 'top-0.5 left-0.5',
       },
       md: {
-        track: 'w-11 h-6',
-        thumb: 'w-5 h-5',
-        thumbOffset: 'top-0.5 left-0.5',
-        translate: 'translate-x-5',
+        trackWidth: 'w-11',
+        trackHeight: 'h-6',
+        thumbSize: 'w-5 h-5',
+        thumbTranslate: 'translate-x-5',
+        thumbPosition: 'top-0.5 left-0.5',
       },
       lg: {
-        track: 'w-14 h-8',
-        thumb: 'w-6 h-6',
-        thumbOffset: 'top-1 left-1',
-        translate: 'translate-x-6',
+        trackWidth: 'w-14',
+        trackHeight: 'h-8',
+        thumbSize: 'w-6 h-6',
+        thumbTranslate: 'translate-x-6',
+        thumbPosition: 'top-1 left-1',
       },
     };
 
-    const { track, thumb, thumbOffset, translate } = sizeClasses[size];
+    const config = sizeConfig[size];
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange?.(e.target.checked);
+    };
 
     return (
       <div className={cn('flex items-start gap-3', className)}>
-        <div className="relative flex items-center">
+        <div className="relative inline-flex items-center">
           <input
             ref={ref}
             type="checkbox"
             id={switchId}
             checked={checked}
-            defaultChecked={defaultChecked}
             onChange={handleChange}
             disabled={disabled}
-            className="sr-only peer"
-            {...props}
+            className="peer sr-only"
           />
           <label
             htmlFor={switchId}
             className={cn(
-              track,
-              'rounded-full cursor-pointer transition-all duration-200 ease-in-out',
-              'bg-bg-tertiary border-2 border-border',
-              'peer-checked:bg-primary-500 peer-checked:border-primary-500',
+              config.trackWidth,
+              config.trackHeight,
+              'rounded-full cursor-pointer transition-colors duration-200 ease-in-out',
+              'bg-gray-300 dark:bg-gray-600',
+              'peer-checked:bg-blue-600 dark:peer-checked:bg-blue-500',
+              'peer-hover:bg-gray-400 dark:peer-hover:bg-gray-500',
+              'peer-checked:peer-hover:bg-blue-700 dark:peer-checked:peer-hover:bg-blue-600',
               'peer-disabled:opacity-50 peer-disabled:cursor-not-allowed',
-              'hover:border-border-hover',
-              'peer-checked:hover:bg-primary-600 peer-checked:hover:border-primary-600',
-              'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-              'dark:focus:ring-offset-bg-primary'
+              'peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2',
+              'dark:peer-focus-visible:ring-offset-gray-900'
             )}
-          >
-            <span
-              className={cn(
-                thumb,
-                'absolute',
-                thumbOffset,
-                'bg-white rounded-full shadow-sm',
-                'transition-all duration-200 ease-in-out',
-                'peer-checked:' + translate,
-                'peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 peer-focus-visible:ring-offset-2'
-              )}
-            />
-          </label>
+          />
+          <span
+            className={cn(
+              config.thumbSize,
+              'absolute',
+              config.thumbPosition,
+              'bg-white rounded-full shadow-md',
+              'transition-transform duration-200 ease-in-out',
+              'translate-x-0',
+              'peer-checked:' + config.thumbTranslate,
+              'pointer-events-none',
+              'peer-disabled:opacity-50'
+            )}
+          />
         </div>
         {(label || description) && (
           <div className="flex flex-col">
@@ -105,7 +105,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
               <label
                 htmlFor={switchId}
                 className={cn(
-                  'text-sm font-medium text-text-primary cursor-pointer',
+                  'text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
               >
@@ -113,7 +113,9 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
               </label>
             )}
             {description && (
-              <p className="text-xs text-text-secondary mt-0.5">{description}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {description}
+              </p>
             )}
           </div>
         )}
