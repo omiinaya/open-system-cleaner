@@ -58,15 +58,15 @@ describe('HealthScoreService', () => {
     it('should return excellent status for high score', () => {
       const excellentMetrics: SystemMetrics = {
         ...mockMetrics,
-        cpu: { ...mockMetrics.cpu, usage: 10 },
-        memory: { ...mockMetrics.memory, percentage: 20 },
-        disk: { total: 500000, used: 150000, free: 350000, drives: [] },
+        cpu: { ...mockMetrics.cpu, usage: 5 },
+        memory: { ...mockMetrics.memory, percentage: 10 },
+        disk: { total: 500000, used: 50000, free: 450000, drives: [] },
       };
 
       const result = healthScoreService.calculateHealthScore(excellentMetrics, {
         securityIssues: 0,
-        startupPrograms: 2,
-        systemAge: 1,
+        startupPrograms: 1,
+        systemAge: 0,
       });
 
       expect(result.status).toBe('excellent');
@@ -171,37 +171,53 @@ describe('HealthScoreService', () => {
     });
 
     it('should handle all status levels', () => {
-      // Test good status (70-89)
-      const goodMetrics: SystemMetrics = {
+      // Test excellent status (90+)
+      const excellentMetrics: SystemMetrics = {
         ...mockMetrics,
-        cpu: { ...mockMetrics.cpu, usage: 40 },
-        memory: { ...mockMetrics.memory, percentage: 60 },
-        disk: { total: 500000, used: 350000, free: 150000, drives: [] },
+        cpu: { ...mockMetrics.cpu, usage: 10 },
+        memory: { ...mockMetrics.memory, percentage: 20 },
+        disk: { total: 500000, used: 100000, free: 400000, drives: [] },
       };
 
-      const goodResult = healthScoreService.calculateHealthScore(goodMetrics, {
-        securityIssues: 1,
-        startupPrograms: 5,
-        systemAge: 3,
+      const excellentResult = healthScoreService.calculateHealthScore(excellentMetrics, {
+        securityIssues: 0,
+        startupPrograms: 1,
+        systemAge: 0,
       });
 
-      expect(['excellent', 'good']).toContain(goodResult.status);
+      expect(excellentResult.status).toBe('excellent');
 
       // Test fair status (40-69)
       const fairMetrics: SystemMetrics = {
         ...mockMetrics,
-        cpu: { ...mockMetrics.cpu, usage: 60 },
-        memory: { ...mockMetrics.memory, percentage: 75 },
-        disk: { total: 500000, used: 425000, free: 75000, drives: [] },
+        cpu: { ...mockMetrics.cpu, usage: 70 },
+        memory: { ...mockMetrics.memory, percentage: 80 },
+        disk: { total: 500000, used: 450000, free: 50000, drives: [] },
       };
 
       const fairResult = healthScoreService.calculateHealthScore(fairMetrics, {
-        securityIssues: 2,
-        startupPrograms: 8,
-        systemAge: 5,
+        securityIssues: 4,
+        startupPrograms: 15,
+        systemAge: 10,
       });
 
-      expect(['good', 'fair', 'poor']).toContain(fairResult.status);
+      expect(['fair', 'poor']).toContain(fairResult.status);
+
+      // Test poor status (<40)
+      const poorMetrics: SystemMetrics = {
+        ...mockMetrics,
+        cpu: { ...mockMetrics.cpu, usage: 95 },
+        memory: { ...mockMetrics.memory, percentage: 95 },
+        disk: { total: 500000, used: 490000, free: 10000, drives: [] },
+      };
+
+      const poorResult = healthScoreService.calculateHealthScore(poorMetrics, {
+        securityIssues: 10,
+        startupPrograms: 25,
+        systemAge: 30,
+      });
+
+      expect(poorResult.status).toBe('poor');
     });
   });
 

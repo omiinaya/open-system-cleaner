@@ -64,18 +64,27 @@ export class JunkFileScanner {
     filePaths: string[],
     totalSize: number
   ): Promise<'cancel' | 'trash' | 'delete'> {
-    const { response } = await dialog.showMessageBox({
-      type: 'warning',
-      buttons: ['Cancel', 'Move to Trash', 'Delete Permanently'],
-      defaultId: 0,
-      title: 'Confirm Deletion',
-      message: `Delete ${filePaths.length} junk files?`,
-      detail: `This will free up ${formatBytes(totalSize)} of space.`,
-      checkboxLabel: 'Do not ask again for this session',
-    });
+    try {
+      if (!dialog) {
+        // In test environments without Electron, default to cancel
+        return 'cancel';
+      }
+      const { response } = await dialog.showMessageBox({
+        type: 'warning',
+        buttons: ['Cancel', 'Move to Trash', 'Delete Permanently'],
+        defaultId: 0,
+        title: 'Confirm Deletion',
+        message: `Delete ${filePaths.length} junk files?`,
+        detail: `This will free up ${formatBytes(totalSize)} of space.`,
+        checkboxLabel: 'Do not ask again for this session',
+      });
 
-    const actions: ('cancel' | 'trash' | 'delete')[] = ['cancel', 'trash', 'delete'];
-    return actions[response];
+      const actions: ('cancel' | 'trash' | 'delete')[] = ['cancel', 'trash', 'delete'];
+      return actions[response] || 'cancel';
+    } catch {
+      // If dialog fails, default to cancel for safety
+      return 'cancel';
+    }
   }
 
   private junkPatterns = [

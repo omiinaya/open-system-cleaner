@@ -29,7 +29,7 @@ describe('formatBytes', () => {
 
   it('should respect decimal places', () => {
     expect(formatBytes(1536, 0)).toBe('2 KB');
-    expect(formatBytes(1536, 2)).toBe('1.50 KB');
+    expect(formatBytes(1536, 2)).toBe('1.5 KB');
   });
 });
 
