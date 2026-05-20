@@ -28,7 +28,8 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     },
     ref
   ) => {
-    const switchId = id || React.useId();
+    const generatedId = React.useId();
+    const switchId = id || generatedId;
 
     const sizeConfig = {
       sm: {

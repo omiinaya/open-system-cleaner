@@ -27,25 +27,14 @@ export class DuplicateFinderService {
 
   constructor() {
     // Set default scan paths based on OS
-    if (process.platform === 'win32') {
-      this.scanPaths = [
-        path.join(os.homedir(), 'Documents'),
-        path.join(os.homedir(), 'Pictures'),
-        path.join(os.homedir(), 'Downloads'),
-        path.join(os.homedir(), 'Desktop'),
-        path.join(os.homedir(), 'Videos'),
-        path.join(os.homedir(), 'Music'),
-      ];
-    } else {
-      this.scanPaths = [
-        path.join(os.homedir(), 'Documents'),
-        path.join(os.homedir(), 'Pictures'),
-        path.join(os.homedir(), 'Downloads'),
-        path.join(os.homedir(), 'Desktop'),
-        path.join(os.homedir(), 'Videos'),
-        path.join(os.homedir(), 'Music'),
-      ];
-    }
+    this.scanPaths = [
+      path.join(os.homedir(), 'Documents'),
+      path.join(os.homedir(), 'Pictures'),
+      path.join(os.homedir(), 'Downloads'),
+      path.join(os.homedir(), 'Desktop'),
+      path.join(os.homedir(), 'Videos'),
+      path.join(os.homedir(), 'Music'),
+    ];
   }
 
   async scan(
@@ -259,52 +248,46 @@ export class DuplicateFinderService {
   }
 
   private async computeFileHash(filePath: string): Promise<string> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const hash = crypto.createHash('md5');
-        const fileHandle = await fs.open(filePath, 'r');
-        
-        try {
-          const bufferSize = 64 * 1024; // 64KB chunks
-          let position = 0;
-          const stats = await fileHandle.stat();
-          
-          // For large files, only hash first and last 1MB for performance
-          const sampleSize = 1024 * 1024;
-          
-          if (stats.size > sampleSize * 2) {
-            // Hash first sample
-            const firstBuffer = Buffer.alloc(sampleSize);
-            await fileHandle.read(firstBuffer, 0, sampleSize, 0);
-            hash.update(firstBuffer);
-            
-            // Hash last sample
-            const lastBuffer = Buffer.alloc(sampleSize);
-            await fileHandle.read(lastBuffer, 0, sampleSize, stats.size - sampleSize);
-            hash.update(lastBuffer);
-            
-            // Add file size to hash
-            hash.update(Buffer.from(stats.size.toString()));
-          } else {
-            // Hash entire file for small files
-            let bytesRead = 0;
-            while (bytesRead < stats.size) {
-              const buffer = Buffer.alloc(Math.min(bufferSize, stats.size - bytesRead));
-              const result = await fileHandle.read(buffer, 0, buffer.length, position);
-              hash.update(buffer.slice(0, result.bytesRead));
-              bytesRead += result.bytesRead;
-              position += result.bytesRead;
-            }
-          }
-          
-          resolve(hash.digest('hex'));
-        } finally {
-          await fileHandle.close();
+    const hash = crypto.createHash('md5');
+    const fileHandle = await fs.open(filePath, 'r');
+
+    try {
+      const bufferSize = 64 * 1024; // 64KB chunks
+      let position = 0;
+      const stats = await fileHandle.stat();
+
+      // For large files, only hash first and last 1MB for performance
+      const sampleSize = 1024 * 1024;
+
+      if (stats.size > sampleSize * 2) {
+        // Hash first sample
+        const firstBuffer = Buffer.alloc(sampleSize);
+        await fileHandle.read(firstBuffer, 0, sampleSize, 0);
+        hash.update(firstBuffer);
+
+        // Hash last sample
+        const lastBuffer = Buffer.alloc(sampleSize);
+        await fileHandle.read(lastBuffer, 0, sampleSize, stats.size - sampleSize);
+        hash.update(lastBuffer);
+
+        // Add file size to hash
+        hash.update(Buffer.from(stats.size.toString()));
+      } else {
+        // Hash entire file for small files
+        let bytesRead = 0;
+        while (bytesRead < stats.size) {
+          const readBuffer = Buffer.alloc(Math.min(bufferSize, stats.size - bytesRead));
+          const result = await fileHandle.read(readBuffer, 0, readBuffer.length, position);
+          hash.update(readBuffer.slice(0, result.bytesRead));
+          bytesRead += result.bytesRead;
+          position += result.bytesRead;
         }
-      } catch (error) {
-        reject(error);
       }
-    });
+
+      return hash.digest('hex');
+    } finally {
+      await fileHandle.close();
+    }
   }
 
   async deleteDuplicates(filePaths: string[]): Promise<{ success: boolean; freedSpace: number; errors: string[] }> {
