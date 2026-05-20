@@ -3,7 +3,7 @@
  * Prevents cascading failures by stopping calls to failing services
  */
 
-export type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+export type CircuitState = "CLOSED" | "OPEN" | "HALF_OPEN";
 
 export interface CircuitBreakerOptions {
   failureThreshold?: number;
@@ -12,18 +12,18 @@ export interface CircuitBreakerOptions {
 }
 
 export class CircuitBreaker {
-  private state: CircuitState = 'CLOSED';
+  private state: CircuitState = "CLOSED";
   private failures = 0;
   private nextAttempt = Date.now();
   private lastFailureTime?: number;
-  
+
   private readonly failureThreshold: number;
   private readonly resetTimeout: number;
   private readonly monitoringPeriod: number;
 
   constructor(
     private name: string,
-    options: CircuitBreakerOptions = {}
+    options: CircuitBreakerOptions = {},
   ) {
     this.failureThreshold = options.failureThreshold || 5;
     this.resetTimeout = options.resetTimeout || 60000; // 1 minute
@@ -34,12 +34,12 @@ export class CircuitBreaker {
    * Execute a function with circuit breaker protection
    */
   async execute<T>(fn: () => Promise<T>): Promise<T> {
-    if (this.state === 'OPEN') {
+    if (this.state === "OPEN") {
       if (Date.now() < this.nextAttempt) {
         throw new Error(`Circuit breaker '${this.name}' is OPEN`);
       }
       // Try half-open
-      this.state = 'HALF_OPEN';
+      this.state = "HALF_OPEN";
     }
 
     try {
@@ -53,7 +53,7 @@ export class CircuitBreaker {
   }
 
   private onSuccess(): void {
-    if (this.state === 'HALF_OPEN') {
+    if (this.state === "HALF_OPEN") {
       // Reset after successful call in half-open state
       this.reset();
     }
@@ -69,13 +69,15 @@ export class CircuitBreaker {
   }
 
   private trip(): void {
-    this.state = 'OPEN';
+    this.state = "OPEN";
     this.nextAttempt = Date.now() + this.resetTimeout;
-    console.warn(`Circuit breaker '${this.name}' tripped. Next attempt at ${new Date(this.nextAttempt).toISOString()}`);
+    console.warn(
+      `Circuit breaker '${this.name}' tripped. Next attempt at ${new Date(this.nextAttempt).toISOString()}`,
+    );
   }
 
   private reset(): void {
-    this.state = 'CLOSED';
+    this.state = "CLOSED";
     this.failures = 0;
     this.lastFailureTime = undefined;
     console.log(`Circuit breaker '${this.name}' reset`);
@@ -105,15 +107,15 @@ export class CircuitBreaker {
 
 // Predefined circuit breakers for common services
 export const circuitBreakers = {
-  systemMetrics: new CircuitBreaker('systemMetrics', {
+  systemMetrics: new CircuitBreaker("systemMetrics", {
     failureThreshold: 3,
     resetTimeout: 30000, // 30 seconds
   }),
-  junkFileScan: new CircuitBreaker('junkFileScan', {
+  junkFileScan: new CircuitBreaker("junkFileScan", {
     failureThreshold: 5,
     resetTimeout: 60000, // 1 minute
   }),
-  ramOptimize: new CircuitBreaker('ramOptimize', {
+  ramOptimize: new CircuitBreaker("ramOptimize", {
     failureThreshold: 3,
     resetTimeout: 30000, // 30 seconds
   }),

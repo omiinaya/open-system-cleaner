@@ -1,6 +1,6 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { auditLogger } from './auditLogger';
+import { exec } from "child_process";
+import { promisify } from "util";
+import { auditLogger } from "./auditLogger";
 
 const execAsync = promisify(exec);
 
@@ -22,15 +22,15 @@ export class SystemRestoreService {
    * Check if System Restore is available on this system
    */
   private async checkAvailability(): Promise<void> {
-    if (process.platform !== 'win32') {
+    if (process.platform !== "win32") {
       this.isAvailable = false;
       return;
     }
 
     try {
       // Check if System Restore service is running
-      const { stdout } = await execAsync('sc query srservice');
-      this.isAvailable = stdout.includes('RUNNING');
+      const { stdout } = await execAsync("sc query srservice");
+      this.isAvailable = stdout.includes("RUNNING");
     } catch {
       this.isAvailable = false;
     }
@@ -52,24 +52,29 @@ export class SystemRestoreService {
     sequenceNumber?: number;
     message: string;
   }> {
-    if (process.platform !== 'win32') {
+    if (process.platform !== "win32") {
       return {
         success: false,
-        message: 'System Restore is only available on Windows',
+        message: "System Restore is only available on Windows",
       };
     }
 
     if (!this.isAvailable) {
       return {
         success: false,
-        message: 'System Restore is not available or disabled on this system',
+        message: "System Restore is not available or disabled on this system",
       };
     }
 
     try {
-      await auditLogger.log('system_restore_create_started', 'systemRestore', 'success', {
-        description,
-      });
+      await auditLogger.log(
+        "system_restore_create_started",
+        "systemRestore",
+        "success",
+        {
+          description,
+        },
+      );
 
       // Use WMI to create restore point
       // Type codes: 0 = Application Install, 12 = Modify Settings
@@ -79,36 +84,49 @@ export class SystemRestoreService {
         Write-Output $result.ReturnValue
       `;
 
-      const { stdout } = await execAsync(`powershell -ExecutionPolicy Bypass -Command "${script}"`);
+      const { stdout } = await execAsync(
+        `powershell -ExecutionPolicy Bypass -Command "${script}"`,
+      );
       const returnValue = parseInt(stdout.trim(), 10);
 
       // Return value 0 = Success
       if (returnValue === 0) {
-        await auditLogger.log('system_restore_create_completed', 'systemRestore', 'success', {
-          description,
-        });
+        await auditLogger.log(
+          "system_restore_create_completed",
+          "systemRestore",
+          "success",
+          {
+            description,
+          },
+        );
 
         return {
           success: true,
-          message: 'System restore point created successfully',
+          message: "System restore point created successfully",
         };
       } else {
         const errorMessages: Record<number, string> = {
-          1: 'System restore is disabled',
-          2: 'Insufficient disk space',
-          3: 'Access denied',
-          4: 'A restore point is already being created',
-          5: 'The maximum number of restore points has been reached',
-          6: 'Unknown error',
+          1: "System restore is disabled",
+          2: "Insufficient disk space",
+          3: "Access denied",
+          4: "A restore point is already being created",
+          5: "The maximum number of restore points has been reached",
+          6: "Unknown error",
         };
 
-        const errorMessage = errorMessages[returnValue] || `Unknown error (code: ${returnValue})`;
+        const errorMessage =
+          errorMessages[returnValue] || `Unknown error (code: ${returnValue})`;
 
-        await auditLogger.log('system_restore_create_failed', 'systemRestore', 'failure', {
-          description,
-          errorCode: returnValue,
-          errorMessage,
-        });
+        await auditLogger.log(
+          "system_restore_create_failed",
+          "systemRestore",
+          "failure",
+          {
+            description,
+            errorCode: returnValue,
+            errorMessage,
+          },
+        );
 
         return {
           success: false,
@@ -116,10 +134,15 @@ export class SystemRestoreService {
         };
       }
     } catch (error) {
-      await auditLogger.log('system_restore_create_failed', 'systemRestore', 'failure', {
-        description,
-        error: String(error),
-      });
+      await auditLogger.log(
+        "system_restore_create_failed",
+        "systemRestore",
+        "failure",
+        {
+          description,
+          error: String(error),
+        },
+      );
 
       return {
         success: false,
@@ -132,7 +155,7 @@ export class SystemRestoreService {
    * List available restore points
    */
   async listRestorePoints(): Promise<SystemRestorePoint[]> {
-    if (process.platform !== 'win32' || !this.isAvailable) {
+    if (process.platform !== "win32" || !this.isAvailable) {
       return [];
     }
 
@@ -144,11 +167,15 @@ export class SystemRestoreService {
         $restorePoints | ConvertTo-Json
       `;
 
-      const { stdout } = await execAsync(`powershell -ExecutionPolicy Bypass -Command "${script}"`);
+      const { stdout } = await execAsync(
+        `powershell -ExecutionPolicy Bypass -Command "${script}"`,
+      );
       const restorePoints = JSON.parse(stdout);
 
       // Handle both single object and array
-      const pointsArray = Array.isArray(restorePoints) ? restorePoints : [restorePoints];
+      const pointsArray = Array.isArray(restorePoints)
+        ? restorePoints
+        : [restorePoints];
 
       return pointsArray.map((rp: any) => ({
         sequenceNumber: rp.SequenceNumber,
@@ -157,7 +184,7 @@ export class SystemRestoreService {
         created: this.parseWmiDateTime(rp.CreationTime),
       }));
     } catch (error) {
-      console.error('Failed to list restore points:', error);
+      console.error("Failed to list restore points:", error);
       return [];
     }
   }
@@ -169,17 +196,22 @@ export class SystemRestoreService {
     success: boolean;
     message: string;
   }> {
-    if (process.platform !== 'win32' || !this.isAvailable) {
+    if (process.platform !== "win32" || !this.isAvailable) {
       return {
         success: false,
-        message: 'System Restore is not available',
+        message: "System Restore is not available",
       };
     }
 
     try {
-      await auditLogger.log('system_restore_to_point_started', 'systemRestore', 'success', {
-        sequenceNumber,
-      });
+      await auditLogger.log(
+        "system_restore_to_point_started",
+        "systemRestore",
+        "success",
+        {
+          sequenceNumber,
+        },
+      );
 
       // Note: This requires a system restart
       // In a real implementation, you'd need to handle the restart flow
@@ -195,21 +227,33 @@ export class SystemRestoreService {
         }
       `;
 
-      const { stdout } = await execAsync(`powershell -ExecutionPolicy Bypass -Command "${script}"`);
+      const { stdout } = await execAsync(
+        `powershell -ExecutionPolicy Bypass -Command "${script}"`,
+      );
 
-      await auditLogger.log('system_restore_to_point_ready', 'systemRestore', 'success', {
-        sequenceNumber,
-      });
+      await auditLogger.log(
+        "system_restore_to_point_ready",
+        "systemRestore",
+        "success",
+        {
+          sequenceNumber,
+        },
+      );
 
       return {
         success: true,
         message: stdout.trim(),
       };
     } catch (error) {
-      await auditLogger.log('system_restore_to_point_failed', 'systemRestore', 'failure', {
-        sequenceNumber,
-        error: String(error),
-      });
+      await auditLogger.log(
+        "system_restore_to_point_failed",
+        "systemRestore",
+        "failure",
+        {
+          sequenceNumber,
+          error: String(error),
+        },
+      );
 
       return {
         success: false,
@@ -223,22 +267,22 @@ export class SystemRestoreService {
    */
   private getRestorePointTypeName(typeCode: number): string {
     const types: Record<number, string> = {
-      0: 'Application Install',
-      1: 'Application Uninstall',
-      2: 'Desktop',
-      3: 'Settings',
-      4: 'Accessibility',
-      5: 'OE Restore',
-      6: 'Upgrade',
-      7: 'SFC',
-      10: 'Windows Update',
-      11: 'Checkpoint',
-      12: 'Manual',
-      13: 'Uninstaller',
-      14: 'Device Driver Install',
+      0: "Application Install",
+      1: "Application Uninstall",
+      2: "Desktop",
+      3: "Settings",
+      4: "Accessibility",
+      5: "OE Restore",
+      6: "Upgrade",
+      7: "SFC",
+      10: "Windows Update",
+      11: "Checkpoint",
+      12: "Manual",
+      13: "Uninstaller",
+      14: "Device Driver Install",
     };
 
-    return types[typeCode] || 'Unknown';
+    return types[typeCode] || "Unknown";
   }
 
   /**
@@ -263,7 +307,9 @@ export class SystemRestoreService {
     try {
       const points = await this.listRestorePoints();
       // Find the most recent restore point created by our app
-      return points.find(p => p.description.includes('OSC System Care')) || null;
+      return (
+        points.find((p) => p.description.includes("OSC System Care")) || null
+      );
     } catch {
       return null;
     }

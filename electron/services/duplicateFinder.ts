@@ -1,6 +1,6 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as crypto from 'crypto';
+import * as fs from "fs/promises";
+import * as path from "path";
+import * as crypto from "crypto";
 
 export interface DuplicateFile {
   hash: string;
@@ -28,12 +28,12 @@ export class DuplicateFinderService {
   constructor() {
     // Set default scan paths based on OS
     this.scanPaths = [
-      path.join(os.homedir(), 'Documents'),
-      path.join(os.homedir(), 'Pictures'),
-      path.join(os.homedir(), 'Downloads'),
-      path.join(os.homedir(), 'Desktop'),
-      path.join(os.homedir(), 'Videos'),
-      path.join(os.homedir(), 'Music'),
+      path.join(os.homedir(), "Documents"),
+      path.join(os.homedir(), "Pictures"),
+      path.join(os.homedir(), "Downloads"),
+      path.join(os.homedir(), "Desktop"),
+      path.join(os.homedir(), "Videos"),
+      path.join(os.homedir(), "Music"),
     ];
   }
 
@@ -42,20 +42,20 @@ export class DuplicateFinderService {
       paths?: string[];
       extensions?: string[];
     } = {},
-    onProgress?: (progress: number, currentFile: string) => void
+    onProgress?: (progress: number, currentFile: string) => void,
   ): Promise<DuplicateScanResult> {
     const paths = options.paths || this.scanPaths;
     const extensions = options.extensions;
 
     // Phase 1: Find all files
     const allFiles = await this.findAllFiles(paths, extensions, onProgress);
-    
+
     // Phase 2: Group by size (quick filter)
     const sizeGroups = this.groupBySize(allFiles);
-    
+
     // Phase 3: Hash files with same size
     const hashGroups = await this.hashFiles(sizeGroups, onProgress);
-    
+
     // Phase 4: Build result
     const duplicates: DuplicateFile[] = [];
     let totalDuplicates = 0;
@@ -65,8 +65,8 @@ export class DuplicateFinderService {
       if (files.length > 1) {
         const fileSize = files[0].size;
         // Mark all but the first as duplicates (keep the oldest)
-        const sortedFiles = files.sort((a, b) => 
-          a.stats.mtime.getTime() - b.stats.mtime.getTime()
+        const sortedFiles = files.sort(
+          (a, b) => a.stats.mtime.getTime() - b.stats.mtime.getTime(),
         );
 
         const duplicateGroup: DuplicateFile = {
@@ -97,15 +97,16 @@ export class DuplicateFinderService {
   private async findAllFiles(
     paths: string[],
     extensions: string[] | undefined,
-    onProgress?: (progress: number, currentFile: string) => void
+    onProgress?: (progress: number, currentFile: string) => void,
   ): Promise<{ path: string; name: string; size: number; stats: any }[]> {
-    const files: { path: string; name: string; size: number; stats: any }[] = [];
+    const files: { path: string; name: string; size: number; stats: any }[] =
+      [];
     let processed = 0;
 
     for (const scanPath of paths) {
       await this.findFilesRecursive(scanPath, extensions, files, 0);
       processed++;
-      
+
       if (onProgress) {
         const progress = Math.round((processed / paths.length) * 30); // 0-30% for file discovery
         onProgress(progress, `Scanning ${scanPath}...`);
@@ -120,7 +121,7 @@ export class DuplicateFinderService {
     extensions: string[] | undefined,
     files: { path: string; name: string; size: number; stats: any }[],
     depth: number,
-    maxDepth: number = 5
+    maxDepth: number = 5,
   ): Promise<void> {
     if (depth > maxDepth) return;
 
@@ -133,11 +134,17 @@ export class DuplicateFinderService {
         if (entry.isDirectory()) {
           // Skip system directories
           if (this.shouldSkipDirectory(entry.name)) continue;
-          
-          await this.findFilesRecursive(fullPath, extensions, files, depth + 1, maxDepth);
+
+          await this.findFilesRecursive(
+            fullPath,
+            extensions,
+            files,
+            depth + 1,
+            maxDepth,
+          );
         } else if (entry.isFile()) {
           const ext = path.extname(entry.name).toLowerCase();
-          
+
           // Filter by extension if specified
           if (extensions && extensions.length > 0) {
             if (!extensions.includes(ext)) continue;
@@ -145,9 +152,12 @@ export class DuplicateFinderService {
 
           try {
             const stats = await fs.stat(fullPath);
-            
+
             // Filter by size
-            if (stats.size < this.minFileSize || stats.size > this.maxFileSize) {
+            if (
+              stats.size < this.minFileSize ||
+              stats.size > this.maxFileSize
+            ) {
               continue;
             }
 
@@ -169,24 +179,29 @@ export class DuplicateFinderService {
 
   private shouldSkipDirectory(name: string): boolean {
     const skipList = [
-      'node_modules',
-      '.git',
-      'System32',
-      'Windows',
-      'ProgramData',
-      '$Recycle.Bin',
-      '.tmp',
-      'temp',
-      'cache',
+      "node_modules",
+      ".git",
+      "System32",
+      "Windows",
+      "ProgramData",
+      "$Recycle.Bin",
+      ".tmp",
+      "temp",
+      "cache",
     ];
-    
-    return skipList.some(skip => name.toLowerCase().includes(skip.toLowerCase()));
+
+    return skipList.some((skip) =>
+      name.toLowerCase().includes(skip.toLowerCase()),
+    );
   }
 
   private groupBySize(
-    files: { path: string; name: string; size: number; stats: any }[]
+    files: { path: string; name: string; size: number; stats: any }[],
   ): Map<number, { path: string; name: string; size: number; stats: any }[]> {
-    const groups = new Map<number, { path: string; name: string; size: number; stats: any }[]>();
+    const groups = new Map<
+      number,
+      { path: string; name: string; size: number; stats: any }[]
+    >();
 
     for (const file of files) {
       const existing = groups.get(file.size) || [];
@@ -205,10 +220,18 @@ export class DuplicateFinderService {
   }
 
   private async hashFiles(
-    sizeGroups: Map<number, { path: string; name: string; size: number; stats: any }[]>,
-    onProgress?: (progress: number, currentFile: string) => void
-  ): Promise<Map<string, { path: string; name: string; size: number; stats: any }[]>> {
-    const hashGroups = new Map<string, { path: string; name: string; size: number; stats: any }[]>();
+    sizeGroups: Map<
+      number,
+      { path: string; name: string; size: number; stats: any }[]
+    >,
+    onProgress?: (progress: number, currentFile: string) => void,
+  ): Promise<
+    Map<string, { path: string; name: string; size: number; stats: any }[]>
+  > {
+    const hashGroups = new Map<
+      string,
+      { path: string; name: string; size: number; stats: any }[]
+    >();
     let processed = 0;
     let totalFiles = 0;
 
@@ -221,7 +244,7 @@ export class DuplicateFinderService {
       for (const file of files) {
         try {
           const hash = await this.computeFileHash(file.path);
-          
+
           const existing = hashGroups.get(hash) || [];
           existing.push(file);
           hashGroups.set(hash, existing);
@@ -248,8 +271,8 @@ export class DuplicateFinderService {
   }
 
   private async computeFileHash(filePath: string): Promise<string> {
-    const hash = crypto.createHash('md5');
-    const fileHandle = await fs.open(filePath, 'r');
+    const hash = crypto.createHash("md5");
+    const fileHandle = await fs.open(filePath, "r");
 
     try {
       const bufferSize = 64 * 1024; // 64KB chunks
@@ -267,7 +290,12 @@ export class DuplicateFinderService {
 
         // Hash last sample
         const lastBuffer = Buffer.alloc(sampleSize);
-        await fileHandle.read(lastBuffer, 0, sampleSize, stats.size - sampleSize);
+        await fileHandle.read(
+          lastBuffer,
+          0,
+          sampleSize,
+          stats.size - sampleSize,
+        );
         hash.update(lastBuffer);
 
         // Add file size to hash
@@ -276,21 +304,30 @@ export class DuplicateFinderService {
         // Hash entire file for small files
         let bytesRead = 0;
         while (bytesRead < stats.size) {
-          const readBuffer = Buffer.alloc(Math.min(bufferSize, stats.size - bytesRead));
-          const result = await fileHandle.read(readBuffer, 0, readBuffer.length, position);
+          const readBuffer = Buffer.alloc(
+            Math.min(bufferSize, stats.size - bytesRead),
+          );
+          const result = await fileHandle.read(
+            readBuffer,
+            0,
+            readBuffer.length,
+            position,
+          );
           hash.update(readBuffer.slice(0, result.bytesRead));
           bytesRead += result.bytesRead;
           position += result.bytesRead;
         }
       }
 
-      return hash.digest('hex');
+      return hash.digest("hex");
     } finally {
       await fileHandle.close();
     }
   }
 
-  async deleteDuplicates(filePaths: string[]): Promise<{ success: boolean; freedSpace: number; errors: string[] }> {
+  async deleteDuplicates(
+    filePaths: string[],
+  ): Promise<{ success: boolean; freedSpace: number; errors: string[] }> {
     let freedSpace = 0;
     const errors: string[] = [];
 
@@ -311,7 +348,9 @@ export class DuplicateFinderService {
     };
   }
 
-  async moveDuplicatesToTrash(filePaths: string[]): Promise<{ success: boolean; errors: string[] }> {
+  async moveDuplicatesToTrash(
+    filePaths: string[],
+  ): Promise<{ success: boolean; errors: string[] }> {
     const errors: string[] = [];
 
     for (const filePath of filePaths) {
@@ -331,7 +370,7 @@ export class DuplicateFinderService {
   }
 
   formatSize(bytes: number): string {
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const units = ["B", "KB", "MB", "GB", "TB"];
     let size = bytes;
     let unitIndex = 0;
 
@@ -345,6 +384,6 @@ export class DuplicateFinderService {
 }
 
 // Need to import os at the top
-import * as os from 'os';
+import * as os from "os";
 
 export const duplicateFinderService = new DuplicateFinderService();

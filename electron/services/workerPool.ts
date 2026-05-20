@@ -1,7 +1,7 @@
-import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
-import * as path from 'path';
-import * as os from 'os';
-import { auditLogger } from './auditLogger';
+import { Worker, isMainThread, parentPort, workerData } from "worker_threads";
+import * as path from "path";
+import * as os from "os";
+import { auditLogger } from "./auditLogger";
 
 export interface WorkerTask<T, R> {
   id: string;
@@ -41,10 +41,7 @@ export class WorkerPool {
   private workerScript: string;
   private isShuttingDown = false;
 
-  constructor(
-    workerScript: string,
-    options: WorkerPoolOptions = {}
-  ) {
+  constructor(workerScript: string, options: WorkerPoolOptions = {}) {
     this.workerScript = workerScript;
     this.options = {
       minWorkers: options.minWorkers || 2,
@@ -71,16 +68,16 @@ export class WorkerPool {
   private createWorker(): Worker {
     const worker = new Worker(this.workerScript);
 
-    worker.on('message', (result: WorkerResult<any>) => {
+    worker.on("message", (result: WorkerResult<any>) => {
       this.handleWorkerMessage(worker, result);
     });
 
-    worker.on('error', (error) => {
-      console.error('Worker error:', error);
+    worker.on("error", (error) => {
+      console.error("Worker error:", error);
       this.handleWorkerError(worker, error);
     });
 
-    worker.on('exit', (code) => {
+    worker.on("exit", (code) => {
       if (code !== 0) {
         console.error(`Worker stopped with exit code ${code}`);
         this.replaceWorker(worker);
@@ -112,7 +109,7 @@ export class WorkerPool {
    * Handle messages from workers
    */
   private handleWorkerMessage(worker: Worker, result: WorkerResult<any>): void {
-    const task = this.taskQueue.find(t => t.id === result.taskId);
+    const task = this.taskQueue.find((t) => t.id === result.taskId);
     if (task) {
       if (result.error) {
         task.reject(new Error(result.error));
@@ -140,7 +137,7 @@ export class WorkerPool {
   private handleWorkerError(worker: Worker, error: Error): void {
     // Find pending tasks for this worker and reject them
     // In a real implementation, you'd track which worker is processing which task
-    console.error('Worker error:', error);
+    console.error("Worker error:", error);
     this.replaceWorker(worker);
   }
 
@@ -149,7 +146,7 @@ export class WorkerPool {
    */
   async execute<T, R>(data: T): Promise<R> {
     if (this.isShuttingDown) {
-      throw new Error('Worker pool is shutting down');
+      throw new Error("Worker pool is shutting down");
     }
 
     const taskId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -171,7 +168,7 @@ export class WorkerPool {
         const index = this.taskQueue.indexOf(task);
         if (index > -1) {
           this.taskQueue.splice(index, 1);
-          reject(new Error('Task timeout'));
+          reject(new Error("Task timeout"));
         }
       }, this.options.taskTimeoutMs);
     });
@@ -185,7 +182,7 @@ export class WorkerPool {
 
     // Find available worker
     const availableWorker = this.workers.find(
-      worker => !this.busyWorkers.get(worker)
+      (worker) => !this.busyWorkers.get(worker),
     );
 
     if (availableWorker) {
@@ -221,20 +218,20 @@ export class WorkerPool {
       const chunk = items.slice(i, i + concurrency);
       const promises = chunk.map((item, index) =>
         this.execute<T, R>(item)
-          .then(result => {
+          .then((result) => {
             results[i + index] = result;
           })
-          .catch(error => {
+          .catch((error) => {
             errors[i + index] = error;
             results[i + index] = null as any;
-          })
+          }),
       );
 
       await Promise.all(promises);
     }
 
     // Check for errors
-    const failedTasks = errors.filter(e => e !== null);
+    const failedTasks = errors.filter((e) => e !== null);
     if (failedTasks.length > 0) {
       console.warn(`${failedTasks.length} tasks failed`);
     }
@@ -248,7 +245,7 @@ export class WorkerPool {
   async map<T, R>(
     items: T[],
     mapper: (item: T) => R | Promise<R>,
-    options: { batchSize?: number } = {}
+    options: { batchSize?: number } = {},
   ): Promise<R[]> {
     const batchSize = options.batchSize || 100;
     const results: R[] = [];
@@ -256,7 +253,7 @@ export class WorkerPool {
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(item => this.execute<T, R>(item))
+        batch.map((item) => this.execute<T, R>(item)),
       );
       results.push(...batchResults);
 
@@ -275,7 +272,7 @@ export class WorkerPool {
   async filter<T>(
     items: T[],
     predicate: (item: T) => boolean | Promise<boolean>,
-    options: { batchSize?: number } = {}
+    options: { batchSize?: number } = {},
   ): Promise<T[]> {
     const batchSize = options.batchSize || 100;
     const results: T[] = [];
@@ -283,7 +280,7 @@ export class WorkerPool {
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
       const mask = await Promise.all(
-        batch.map(item => this.execute<T, boolean>(item))
+        batch.map((item) => this.execute<T, boolean>(item)),
       );
 
       for (let j = 0; j < batch.length; j++) {
@@ -302,7 +299,7 @@ export class WorkerPool {
   async reduce<T, R>(
     items: T[],
     reducer: (acc: R, item: T) => R | Promise<R>,
-    initialValue: R
+    initialValue: R,
   ): Promise<R> {
     let result = initialValue;
 
@@ -345,14 +342,15 @@ export class WorkerPool {
     const shutdownTimeout = 30000; // 30 seconds
     const startTime = Date.now();
 
-    while (this.taskQueue.length > 0 && Date.now() - startTime < shutdownTimeout) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+    while (
+      this.taskQueue.length > 0 &&
+      Date.now() - startTime < shutdownTimeout
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     // Terminate all workers
-    const terminatePromises = this.workers.map(worker =>
-      worker.terminate()
-    );
+    const terminatePromises = this.workers.map((worker) => worker.terminate());
 
     await Promise.all(terminatePromises);
 
@@ -360,7 +358,7 @@ export class WorkerPool {
     this.busyWorkers.clear();
     this.taskQueue = [];
 
-    await auditLogger.log('worker_pool_shutdown', 'workerPool', 'success', {});
+    await auditLogger.log("worker_pool_shutdown", "workerPool", "success", {});
   }
 }
 
@@ -466,12 +464,12 @@ export class ParallelFileProcessor {
 
   constructor() {
     // Create a temporary worker script
-    this.workerScriptPath = path.join(__dirname, 'file-hash-worker.js');
+    this.workerScriptPath = path.join(__dirname, "file-hash-worker.js");
     this.createWorkerScript();
   }
 
   private createWorkerScript(): void {
-    const fs = require('fs');
+    const fs = require("fs");
     const script = createFileHashWorkerScript();
     fs.writeFileSync(this.workerScriptPath, script);
   }
@@ -491,26 +489,31 @@ export class ParallelFileProcessor {
   /**
    * Hash multiple files in parallel
    */
-  async hashFiles(filePaths: string[]): Promise<Array<{ filePath: string; hash: string }>> {
+  async hashFiles(
+    filePaths: string[],
+  ): Promise<Array<{ filePath: string; hash: string }>> {
     this.initialize();
 
     if (!this.workerPool) {
-      throw new Error('Worker pool not initialized');
+      throw new Error("Worker pool not initialized");
     }
 
     const startTime = Date.now();
 
     try {
-    const results = await this.workerPool.executeBatch<{ filePath: string }, { filePath: string; hash: string }>(
-      filePaths.map(filePath => ({ filePath }))
-    );
+      const results = await this.workerPool.executeBatch<
+        { filePath: string },
+        { filePath: string; hash: string }
+      >(filePaths.map((filePath) => ({ filePath })));
 
       const duration = Date.now() - startTime;
-      console.log(`Hashed ${filePaths.length} files in ${duration}ms using worker threads`);
+      console.log(
+        `Hashed ${filePaths.length} files in ${duration}ms using worker threads`,
+      );
 
       return results;
     } catch (error) {
-      console.error('Error hashing files:', error);
+      console.error("Error hashing files:", error);
       throw error;
     }
   }
@@ -521,12 +524,12 @@ export class ParallelFileProcessor {
   async processFiles<T, R>(
     filePaths: string[],
     processor: (filePath: string) => T,
-    options: { batchSize?: number } = {}
+    options: { batchSize?: number } = {},
   ): Promise<R[]> {
     this.initialize();
 
     if (!this.workerPool) {
-      throw new Error('Worker pool not initialized');
+      throw new Error("Worker pool not initialized");
     }
 
     const batchSize = options.batchSize || 50;
@@ -535,7 +538,7 @@ export class ParallelFileProcessor {
     for (let i = 0; i < filePaths.length; i += batchSize) {
       const batch = filePaths.slice(i, i + batchSize);
       const batchResults = await this.workerPool.executeBatch<T, R>(
-        batch.map(processor)
+        batch.map(processor),
       );
       results.push(...batchResults);
 
@@ -573,7 +576,7 @@ export class ParallelFileProcessor {
 
     // Cleanup worker script
     try {
-      const fs = require('fs');
+      const fs = require("fs");
       fs.unlinkSync(this.workerScriptPath);
     } catch {
       // Ignore cleanup errors

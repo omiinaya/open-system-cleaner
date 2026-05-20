@@ -1,11 +1,15 @@
 /**
  * Unit tests for HealthScoreService
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import { healthScoreService, HealthFactors, HealthResult } from '../healthScore';
-import type { SystemMetrics } from '../systemMetrics';
+import { describe, it, expect, beforeEach } from "vitest";
+import {
+  healthScoreService,
+  HealthFactors,
+  HealthResult,
+} from "../healthScore";
+import type { SystemMetrics } from "../systemMetrics";
 
-describe('HealthScoreService', () => {
+describe("HealthScoreService", () => {
   let mockMetrics: SystemMetrics;
 
   beforeEach(() => {
@@ -13,7 +17,7 @@ describe('HealthScoreService', () => {
       cpu: {
         usage: 30,
         cores: 4,
-        model: 'Test CPU',
+        model: "Test CPU",
         speed: 2500,
       },
       memory: {
@@ -31,31 +35,31 @@ describe('HealthScoreService', () => {
       network: {
         upload: 50,
         download: 100,
-        interface: 'eth0',
+        interface: "eth0",
       },
     };
   });
 
-  describe('calculateHealthScore', () => {
-    it('should return a health result with valid structure', () => {
+  describe("calculateHealthScore", () => {
+    it("should return a health result with valid structure", () => {
       const result = healthScoreService.calculateHealthScore(mockMetrics);
 
-      expect(result).toHaveProperty('score');
-      expect(result).toHaveProperty('status');
-      expect(result).toHaveProperty('recommendations');
-      expect(typeof result.score).toBe('number');
-      expect(typeof result.status).toBe('string');
+      expect(result).toHaveProperty("score");
+      expect(result).toHaveProperty("status");
+      expect(result).toHaveProperty("recommendations");
+      expect(typeof result.score).toBe("number");
+      expect(typeof result.status).toBe("string");
       expect(Array.isArray(result.recommendations)).toBe(true);
     });
 
-    it('should calculate score between 0 and 100', () => {
+    it("should calculate score between 0 and 100", () => {
       const result = healthScoreService.calculateHealthScore(mockMetrics);
 
       expect(result.score).toBeGreaterThanOrEqual(0);
       expect(result.score).toBeLessThanOrEqual(100);
     });
 
-    it('should return excellent status for high score', () => {
+    it("should return excellent status for high score", () => {
       const excellentMetrics: SystemMetrics = {
         ...mockMetrics,
         cpu: { ...mockMetrics.cpu, usage: 5 },
@@ -69,11 +73,11 @@ describe('HealthScoreService', () => {
         systemAge: 0,
       });
 
-      expect(result.status).toBe('excellent');
+      expect(result.status).toBe("excellent");
       expect(result.score).toBeGreaterThanOrEqual(90);
     });
 
-    it('should return poor status for low score', () => {
+    it("should return poor status for low score", () => {
       const poorMetrics: SystemMetrics = {
         ...mockMetrics,
         cpu: { ...mockMetrics.cpu, usage: 95 },
@@ -87,37 +91,47 @@ describe('HealthScoreService', () => {
         systemAge: 30,
       });
 
-      expect(result.status).toBe('poor');
+      expect(result.status).toBe("poor");
       expect(result.score).toBeLessThan(40);
     });
 
-    it('should consider security issues in score', () => {
+    it("should consider security issues in score", () => {
       const baseResult = healthScoreService.calculateHealthScore(mockMetrics, {
         securityIssues: 0,
       });
 
-      const withSecurityIssues = healthScoreService.calculateHealthScore(mockMetrics, {
-        securityIssues: 5,
-      });
+      const withSecurityIssues = healthScoreService.calculateHealthScore(
+        mockMetrics,
+        {
+          securityIssues: 5,
+        },
+      );
 
       expect(withSecurityIssues.score).toBeLessThan(baseResult.score);
-      expect(withSecurityIssues.recommendations.some(r => r.includes('security'))).toBe(true);
+      expect(
+        withSecurityIssues.recommendations.some((r) => r.includes("security")),
+      ).toBe(true);
     });
 
-    it('should consider startup programs in score', () => {
+    it("should consider startup programs in score", () => {
       const fewStartups = healthScoreService.calculateHealthScore(mockMetrics, {
         startupPrograms: 2,
       });
 
-      const manyStartups = healthScoreService.calculateHealthScore(mockMetrics, {
-        startupPrograms: 15,
-      });
+      const manyStartups = healthScoreService.calculateHealthScore(
+        mockMetrics,
+        {
+          startupPrograms: 15,
+        },
+      );
 
       expect(manyStartups.score).toBeLessThan(fewStartups.score);
-      expect(manyStartups.recommendations.some(r => r.includes('startup'))).toBe(true);
+      expect(
+        manyStartups.recommendations.some((r) => r.includes("startup")),
+      ).toBe(true);
     });
 
-    it('should consider system age in score', () => {
+    it("should consider system age in score", () => {
       const recent = healthScoreService.calculateHealthScore(mockMetrics, {
         systemAge: 1,
       });
@@ -127,10 +141,12 @@ describe('HealthScoreService', () => {
       });
 
       expect(old.score).toBeLessThan(recent.score);
-      expect(old.recommendations.some(r => r.includes('optimized'))).toBe(true);
+      expect(old.recommendations.some((r) => r.includes("optimized"))).toBe(
+        true,
+      );
     });
 
-    it('should generate appropriate recommendations', () => {
+    it("should generate appropriate recommendations", () => {
       const highUsageMetrics: SystemMetrics = {
         ...mockMetrics,
         cpu: { ...mockMetrics.cpu, usage: 85 },
@@ -145,13 +161,17 @@ describe('HealthScoreService', () => {
       });
 
       expect(result.recommendations.length).toBeGreaterThan(0);
-      expect(result.recommendations.some(r => r.includes('CPU'))).toBe(true);
-      expect(result.recommendations.some(r => r.includes('Memory'))).toBe(true);
-      expect(result.recommendations.some(r => r.includes('Disk'))).toBe(true);
-      expect(result.recommendations.some(r => r.includes('security'))).toBe(true);
+      expect(result.recommendations.some((r) => r.includes("CPU"))).toBe(true);
+      expect(result.recommendations.some((r) => r.includes("Memory"))).toBe(
+        true,
+      );
+      expect(result.recommendations.some((r) => r.includes("Disk"))).toBe(true);
+      expect(result.recommendations.some((r) => r.includes("security"))).toBe(
+        true,
+      );
     });
 
-    it('should handle edge case of zero disk total', () => {
+    it("should handle edge case of zero disk total", () => {
       const zeroDiskMetrics: SystemMetrics = {
         ...mockMetrics,
         disk: { ...mockMetrics.disk, total: 0 },
@@ -163,14 +183,14 @@ describe('HealthScoreService', () => {
       expect(result.score).toBeLessThanOrEqual(100);
     });
 
-    it('should use default values for missing factors', () => {
+    it("should use default values for missing factors", () => {
       const result = healthScoreService.calculateHealthScore(mockMetrics);
 
       expect(result.score).toBeGreaterThanOrEqual(0);
       expect(result.status).toBeDefined();
     });
 
-    it('should handle all status levels', () => {
+    it("should handle all status levels", () => {
       // Test excellent status (90+)
       const excellentMetrics: SystemMetrics = {
         ...mockMetrics,
@@ -179,13 +199,16 @@ describe('HealthScoreService', () => {
         disk: { total: 500000, used: 100000, free: 400000, drives: [] },
       };
 
-      const excellentResult = healthScoreService.calculateHealthScore(excellentMetrics, {
-        securityIssues: 0,
-        startupPrograms: 1,
-        systemAge: 0,
-      });
+      const excellentResult = healthScoreService.calculateHealthScore(
+        excellentMetrics,
+        {
+          securityIssues: 0,
+          startupPrograms: 1,
+          systemAge: 0,
+        },
+      );
 
-      expect(excellentResult.status).toBe('excellent');
+      expect(excellentResult.status).toBe("excellent");
 
       // Test fair status (40-69)
       const fairMetrics: SystemMetrics = {
@@ -201,7 +224,7 @@ describe('HealthScoreService', () => {
         systemAge: 10,
       });
 
-      expect(['fair', 'poor']).toContain(fairResult.status);
+      expect(["fair", "poor"]).toContain(fairResult.status);
 
       // Test poor status (<40)
       const poorMetrics: SystemMetrics = {
@@ -217,12 +240,12 @@ describe('HealthScoreService', () => {
         systemAge: 30,
       });
 
-      expect(poorResult.status).toBe('poor');
+      expect(poorResult.status).toBe("poor");
     });
   });
 
-  describe('score calculation weights', () => {
-    it('should apply correct weight to CPU score', () => {
+  describe("score calculation weights", () => {
+    it("should apply correct weight to CPU score", () => {
       const lowCpu = healthScoreService.calculateHealthScore({
         ...mockMetrics,
         cpu: { ...mockMetrics.cpu, usage: 10 },
@@ -239,14 +262,20 @@ describe('HealthScoreService', () => {
       expect(scoreDiff).toBeLessThan(25);
     });
 
-    it('should apply correct weight to security score', () => {
-      const noSecurityIssues = healthScoreService.calculateHealthScore(mockMetrics, {
-        securityIssues: 0,
-      });
+    it("should apply correct weight to security score", () => {
+      const noSecurityIssues = healthScoreService.calculateHealthScore(
+        mockMetrics,
+        {
+          securityIssues: 0,
+        },
+      );
 
-      const withSecurityIssues = healthScoreService.calculateHealthScore(mockMetrics, {
-        securityIssues: 5,
-      });
+      const withSecurityIssues = healthScoreService.calculateHealthScore(
+        mockMetrics,
+        {
+          securityIssues: 5,
+        },
+      );
 
       // Security has 25% weight, each issue deducts 10 points from security score
       // 5 issues = 50 point deduction in security = 12.5 points total

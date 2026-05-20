@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 // ============================================
 // System Health Types
@@ -6,15 +6,15 @@ import type { ReactNode } from 'react';
 
 export interface SystemHealthData {
   score: number;
-  status: 'excellent' | 'good' | 'fair' | 'poor';
+  status: "excellent" | "good" | "fair" | "poor";
   lastScan: Date | null;
   issues: SystemIssue[];
 }
 
 export interface SystemIssue {
   id: string;
-  type: 'junk' | 'registry' | 'privacy' | 'performance' | 'security';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  type: "junk" | "registry" | "privacy" | "performance" | "security";
+  severity: "low" | "medium" | "high" | "critical";
   title: string;
   description: string;
   size?: number; // For junk files
@@ -59,21 +59,21 @@ export interface DiskDrive {
   total: number;
   used: number;
   free: number;
-  type: 'SSD' | 'HDD';
+  type: "SSD" | "HDD";
 }
 
 // ============================================
 // Module Configuration Types
 // ============================================
 
-export type ModuleType = 
-  | 'dashboard' 
-  | 'clean' 
-  | 'optimize' 
-  | 'protect' 
-  | 'speedup' 
-  | 'toolbox' 
-  | 'settings';
+export type ModuleType =
+  | "dashboard"
+  | "clean"
+  | "optimize"
+  | "protect"
+  | "speedup"
+  | "toolbox"
+  | "settings";
 
 export interface ModuleConfig {
   id: ModuleType;
@@ -111,7 +111,7 @@ export interface RegistrySection {
 export interface PrivacyTrace {
   id: string;
   name: string;
-  type: 'browser' | 'system' | 'application';
+  type: "browser" | "system" | "application";
   isSelected: boolean;
 }
 
@@ -125,7 +125,7 @@ export interface StartupProgram {
   id: string;
   name: string;
   publisher: string;
-  impact: 'low' | 'medium' | 'high';
+  impact: "low" | "medium" | "high";
   isEnabled: boolean;
   command: string;
 }
@@ -151,8 +151,8 @@ export interface ProtectModuleConfig extends ModuleConfig {
 
 export interface VulnerabilityScannerSettings {
   autoScan: boolean;
-  scanSchedule: 'daily' | 'weekly' | 'monthly';
-  scanDepth: 'quick' | 'full' | 'custom';
+  scanSchedule: "daily" | "weekly" | "monthly";
+  scanDepth: "quick" | "full" | "custom";
 }
 
 export interface BrowserProtectionSettings {
@@ -214,7 +214,7 @@ export interface SidebarConfig {
 // Theme Types
 // ============================================
 
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = "light" | "dark" | "system";
 
 export interface ThemeConfig {
   theme: Theme;
@@ -229,17 +229,23 @@ export interface ThemeConfig {
 // UI Component Types
 // ============================================
 
-export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'ghost';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "danger"
+  | "ghost";
+export type ButtonSize = "sm" | "md" | "lg";
 
-export type CardVariant = 'default' | 'info' | 'success' | 'warning' | 'danger';
+export type CardVariant = "default" | "info" | "success" | "warning" | "danger";
 
-export type ProgressVariant = 'linear' | 'circular' | 'stepped';
+export type ProgressVariant = "linear" | "circular" | "stepped";
 
 export interface Toast {
   id: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   duration: number;
   dismissible: boolean;
 }
@@ -248,7 +254,7 @@ export interface Modal {
   id: string;
   title: string;
   content: ReactNode;
-  size: 'sm' | 'md' | 'lg' | 'xl';
+  size: "sm" | "md" | "lg" | "xl";
   onClose?: () => void;
 }
 
@@ -256,8 +262,8 @@ export interface Modal {
 // Scan & Optimization Types
 // ============================================
 
-export type ScanStatus = 'idle' | 'scanning' | 'paused' | 'completed' | 'error';
-export type OptimizationStatus = 'idle' | 'running' | 'completed' | 'error';
+export type ScanStatus = "idle" | "scanning" | "paused" | "completed" | "error";
+export type OptimizationStatus = "idle" | "running" | "completed" | "error";
 
 export interface ScanProgress {
   status: ScanStatus;
@@ -316,7 +322,7 @@ export interface NotificationSettings {
 
 export interface ScanSettings {
   autoScan: boolean;
-  scanSchedule: 'daily' | 'weekly' | 'monthly' | 'manual';
+  scanSchedule: "daily" | "weekly" | "monthly" | "manual";
   scanAtStartup: boolean;
 }
 
@@ -327,7 +333,7 @@ export interface PrivacySettings {
 }
 
 export interface AdvancedSettings {
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  logLevel: "debug" | "info" | "warn" | "error";
   maxLogSize: number;
   backupBeforeChanges: boolean;
   excludePaths: string[];
@@ -344,18 +350,30 @@ export interface ElectronAPI {
 
   // Cleanup operations
   scanJunkFiles: () => Promise<{ files: string[]; totalSize: number }>;
-  cleanJunkFiles: (paths: string[]) => Promise<{ success: boolean; cleanedSize: number }>;
+  cleanJunkFiles: (
+    paths: string[],
+  ) => Promise<{ success: boolean; cleanedSize: number }>;
   scanRegistry: () => Promise<{ issues: string[]; totalIssues: number }>;
-  fixRegistry: (issues: string[]) => Promise<{ success: boolean; fixedCount: number }>;
+  fixRegistry: (
+    issues: string[],
+  ) => Promise<{ success: boolean; fixedCount: number }>;
 
   // Optimization operations
-  boostPerformance: () => Promise<{ success: boolean; optimizationsApplied: number }>;
-  optimizeStartup: () => Promise<{ success: boolean; programsOptimized: number }>;
+  boostPerformance: () => Promise<{
+    success: boolean;
+    optimizationsApplied: number;
+  }>;
+  optimizeStartup: () => Promise<{
+    success: boolean;
+    programsOptimized: number;
+  }>;
   optimizeRAM: () => Promise<{ success: boolean; memoryFreed: number }>;
 
   // Security operations
   scanVulnerabilities: () => Promise<{ issues: string[]; totalIssues: number }>;
-  enableRealTimeProtection: (enabled: boolean) => Promise<{ success: boolean; enabled: boolean }>;
+  enableRealTimeProtection: (
+    enabled: boolean,
+  ) => Promise<{ success: boolean; enabled: boolean }>;
 
   // App operations
   getAppVersion: () => Promise<string>;

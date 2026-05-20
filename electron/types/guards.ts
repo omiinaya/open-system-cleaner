@@ -1,42 +1,50 @@
-import type { ScanResult } from '../services/junkFileScanner';
-import type { SystemMetrics } from '../services/systemMetrics';
-import type { ProcessInfo } from '../services/ramOptimizer';
+import type { ScanResult } from "../services/junkFileScanner";
+import type { SystemMetrics } from "../services/systemMetrics";
+import type { ProcessInfo } from "../services/ramOptimizer";
 
 /**
  * Type guard for ScanResult
  */
 export function isValidScanResult(obj: any): obj is ScanResult {
-  return obj &&
-    typeof obj === 'object' &&
+  return (
+    obj &&
+    typeof obj === "object" &&
     Array.isArray(obj.files) &&
-    typeof obj.totalSize === 'number' &&
-    obj.totalSize >= 0;
+    typeof obj.totalSize === "number" &&
+    obj.totalSize >= 0
+  );
 }
 
 /**
  * Type guard for SystemMetrics
  */
 export function isValidSystemMetrics(obj: any): obj is SystemMetrics {
-  return obj &&
-    typeof obj === 'object' &&
+  return (
+    obj &&
+    typeof obj === "object" &&
     obj.cpu &&
-    typeof obj.cpu.usage === 'number' &&
+    typeof obj.cpu.usage === "number" &&
     obj.memory &&
-    typeof obj.memory.total === 'number' &&
+    typeof obj.memory.total === "number" &&
     obj.memory.total > 0 &&
     obj.disk &&
-    typeof obj.disk.total === 'number' &&
-    obj.disk.total > 0;
+    typeof obj.disk.total === "number" &&
+    obj.disk.total > 0
+  );
 }
 
 /**
  * Type guard for ProcessInfo array
  */
 export function isValidProcessInfoArray(obj: any): obj is ProcessInfo[] {
-  return Array.isArray(obj) && obj.every(p =>
-    typeof p.pid === 'number' &&
-    typeof p.name === 'string' &&
-    typeof p.memory === 'number'
+  return (
+    Array.isArray(obj) &&
+    obj.every(
+      (p) =>
+        typeof p.pid === "number" &&
+        typeof p.name === "string" &&
+        typeof p.memory === "number",
+    )
   );
 }
 
@@ -44,7 +52,7 @@ export function isValidProcessInfoArray(obj: any): obj is ProcessInfo[] {
  * Type guard for string array
  */
 export function isValidStringArray(obj: any): obj is string[] {
-  return Array.isArray(obj) && obj.every(item => typeof item === 'string');
+  return Array.isArray(obj) && obj.every((item) => typeof item === "string");
 }
 
 /**
@@ -52,11 +60,13 @@ export function isValidStringArray(obj: any): obj is string[] {
  */
 export function sanitizeFilePath(filePath: string): string {
   // Normalize path
-  const normalized = filePath.replace(/\\/g, '/');
-  
+  const normalized = filePath.replace(/\\/g, "/");
+
   // Remove path traversal attempts
-  const sanitized = normalized.replace(/^(\.\.\/)+/, '').replace(/\/\.\.\//g, '/');
-  
+  const sanitized = normalized
+    .replace(/^(\.\.\/)+/, "")
+    .replace(/\/\.\.\//g, "/");
+
   return sanitized;
 }
 
@@ -70,7 +80,10 @@ export function isNonEmptyArray<T>(obj: any): obj is T[] {
 /**
  * Validate file extension is safe
  */
-export function isSafeFileExtension(ext: string, protectedExts: string[]): boolean {
+export function isSafeFileExtension(
+  ext: string,
+  protectedExts: string[],
+): boolean {
   const lowerExt = ext.toLowerCase();
   return !protectedExts.includes(lowerExt);
 }

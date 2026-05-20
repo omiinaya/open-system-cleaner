@@ -1,14 +1,14 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { NotificationSettings, ScanSettings } from '../types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { NotificationSettings, ScanSettings } from "../types";
 
 interface SettingsState {
   // Notification settings
   notifications: NotificationSettings;
-  
+
   // Scan settings
   scan: ScanSettings;
-  
+
   // Actions
   setNotifications: (settings: Partial<NotificationSettings>) => void;
   setScan: (settings: Partial<ScanSettings>) => void;
@@ -27,7 +27,7 @@ const defaultNotifications: NotificationSettings = {
 
 const defaultScan: ScanSettings = {
   autoScan: true,
-  scanSchedule: 'weekly',
+  scanSchedule: "weekly",
   scanAtStartup: false,
 };
 
@@ -37,7 +37,7 @@ export const useSettingsStore = create<SettingsState>()(
       // Initial state
       notifications: defaultNotifications,
       scan: defaultScan,
-      
+
       // Set notification settings
       setNotifications: (newSettings) => {
         set({
@@ -47,7 +47,7 @@ export const useSettingsStore = create<SettingsState>()(
           },
         });
       },
-      
+
       // Set scan settings
       setScan: (newSettings) => {
         set({
@@ -57,7 +57,7 @@ export const useSettingsStore = create<SettingsState>()(
           },
         });
       },
-      
+
       // Toggle sound enabled
       toggleSoundEnabled: () => {
         set({
@@ -67,7 +67,7 @@ export const useSettingsStore = create<SettingsState>()(
           },
         });
       },
-      
+
       // Reset all settings to defaults
       resetSettings: () => {
         set({
@@ -77,13 +77,13 @@ export const useSettingsStore = create<SettingsState>()(
       },
     }),
     {
-      name: 'settings-storage',
+      name: "settings-storage",
       partialize: (state) => ({
         notifications: state.notifications,
         scan: state.scan,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export default useSettingsStore;

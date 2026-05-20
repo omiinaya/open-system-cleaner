@@ -1,9 +1,16 @@
-import React, { useEffect } from 'react';
-import { useThemeStore } from './stores/themeStore';
-import { useNavigationStore } from './stores/navigationStore';
-import MainLayout from './components/layout/MainLayout';
-import { DashboardOverview } from './components/dashboard';
-import { CleanModule, OptimizeModule, ProtectModule, SpeedUpModule, ToolboxModule, SettingsModule } from './components/modules';
+import React, { useEffect } from "react";
+import { useThemeStore } from "./stores/themeStore";
+import { useNavigationStore } from "./stores/navigationStore";
+import MainLayout from "./components/layout/MainLayout";
+import { DashboardOverview } from "./components/dashboard";
+import {
+  CleanModule,
+  OptimizeModule,
+  ProtectModule,
+  SpeedUpModule,
+  ToolboxModule,
+  SettingsModule,
+} from "./components/modules";
 
 // Main App Component
 const App: React.FC = () => {
@@ -11,24 +18,24 @@ const App: React.FC = () => {
   const { currentModule, setCurrentModule } = useNavigationStore();
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
 
   const renderModule = () => {
     switch (currentModule) {
-      case 'dashboard':
+      case "dashboard":
         return <DashboardOverview />;
-      case 'clean':
+      case "clean":
         return <CleanModule />;
-      case 'optimize':
+      case "optimize":
         return <OptimizeModule />;
-      case 'protect':
+      case "protect":
         return <ProtectModule />;
-      case 'speedup':
+      case "speedup":
         return <SpeedUpModule />;
-      case 'toolbox':
+      case "toolbox":
         return <ToolboxModule />;
-      case 'settings':
+      case "settings":
         return <SettingsModule />;
       default:
         return <DashboardOverview />;
@@ -41,9 +48,7 @@ const App: React.FC = () => {
       onModuleChange={setCurrentModule}
       pageTitle=""
     >
-      <div className="animate-fade-in">
-        {renderModule()}
-      </div>
+      <div className="animate-fade-in">{renderModule()}</div>
     </MainLayout>
   );
 };

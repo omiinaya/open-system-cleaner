@@ -1,9 +1,9 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as os from 'os';
+import * as fs from "fs/promises";
+import * as path from "path";
+import * as os from "os";
 
 export interface PrivacyItem {
-  type: 'history' | 'cookies' | 'cache' | 'downloads' | 'passwords';
+  type: "history" | "cookies" | "cache" | "downloads" | "passwords";
   path: string;
   size: number;
   browser: string;
@@ -18,49 +18,87 @@ export interface BrowserData {
 export class PrivacySweepService {
   private browsers = [
     {
-      name: 'Chrome',
+      name: "Chrome",
       dataPath: this.getChromePath(),
-      profiles: ['Default', 'Profile 1', 'Profile 2', 'Profile 3'],
+      profiles: ["Default", "Profile 1", "Profile 2", "Profile 3"],
     },
     {
-      name: 'Firefox',
+      name: "Firefox",
       dataPath: this.getFirefoxPath(),
-      profiles: ['*'], // Auto-detect profiles
+      profiles: ["*"], // Auto-detect profiles
     },
     {
-      name: 'Edge',
+      name: "Edge",
       dataPath: this.getEdgePath(),
-      profiles: ['Default'],
+      profiles: ["Default"],
     },
   ];
 
   private getChromePath(): string {
-    if (process.platform === 'win32') {
-      return path.join(os.homedir(), 'AppData', 'Local', 'Google', 'Chrome', 'User Data');
-    } else if (process.platform === 'darwin') {
-      return path.join(os.homedir(), 'Library', 'Application Support', 'Google', 'Chrome');
+    if (process.platform === "win32") {
+      return path.join(
+        os.homedir(),
+        "AppData",
+        "Local",
+        "Google",
+        "Chrome",
+        "User Data",
+      );
+    } else if (process.platform === "darwin") {
+      return path.join(
+        os.homedir(),
+        "Library",
+        "Application Support",
+        "Google",
+        "Chrome",
+      );
     } else {
-      return path.join(os.homedir(), '.config', 'google-chrome');
+      return path.join(os.homedir(), ".config", "google-chrome");
     }
   }
 
   private getFirefoxPath(): string {
-    if (process.platform === 'win32') {
-      return path.join(os.homedir(), 'AppData', 'Roaming', 'Mozilla', 'Firefox', 'Profiles');
-    } else if (process.platform === 'darwin') {
-      return path.join(os.homedir(), 'Library', 'Application Support', 'Firefox', 'Profiles');
+    if (process.platform === "win32") {
+      return path.join(
+        os.homedir(),
+        "AppData",
+        "Roaming",
+        "Mozilla",
+        "Firefox",
+        "Profiles",
+      );
+    } else if (process.platform === "darwin") {
+      return path.join(
+        os.homedir(),
+        "Library",
+        "Application Support",
+        "Firefox",
+        "Profiles",
+      );
     } else {
-      return path.join(os.homedir(), '.mozilla', 'firefox');
+      return path.join(os.homedir(), ".mozilla", "firefox");
     }
   }
 
   private getEdgePath(): string {
-    if (process.platform === 'win32') {
-      return path.join(os.homedir(), 'AppData', 'Local', 'Microsoft', 'Edge', 'User Data');
-    } else if (process.platform === 'darwin') {
-      return path.join(os.homedir(), 'Library', 'Application Support', 'Microsoft Edge');
+    if (process.platform === "win32") {
+      return path.join(
+        os.homedir(),
+        "AppData",
+        "Local",
+        "Microsoft",
+        "Edge",
+        "User Data",
+      );
+    } else if (process.platform === "darwin") {
+      return path.join(
+        os.homedir(),
+        "Library",
+        "Application Support",
+        "Microsoft Edge",
+      );
     } else {
-      return path.join(os.homedir(), '.config', 'microsoft-edge');
+      return path.join(os.homedir(), ".config", "microsoft-edge");
     }
   }
 
@@ -97,38 +135,47 @@ export class PrivacySweepService {
     }
   }
 
-  private async scanBrowserData(browser: { name: string; dataPath: string; profiles: string[] }): Promise<PrivacyItem[]> {
+  private async scanBrowserData(browser: {
+    name: string;
+    dataPath: string;
+    profiles: string[];
+  }): Promise<PrivacyItem[]> {
     const items: PrivacyItem[] = [];
 
     for (const profile of browser.profiles) {
       try {
-        const profilePath = profile === '*' 
-          ? browser.dataPath 
-          : path.join(browser.dataPath, profile);
+        const profilePath =
+          profile === "*"
+            ? browser.dataPath
+            : path.join(browser.dataPath, profile);
 
         // Scan cache
         const cachePaths = [
-          path.join(profilePath, 'Cache'),
-          path.join(profilePath, 'Code Cache'),
-          path.join(profilePath, 'GPUCache'),
+          path.join(profilePath, "Cache"),
+          path.join(profilePath, "Code Cache"),
+          path.join(profilePath, "GPUCache"),
         ];
 
         for (const cachePath of cachePaths) {
-          const cacheItems = await this.scanDirectory(cachePath, 'cache', browser.name);
+          const cacheItems = await this.scanDirectory(
+            cachePath,
+            "cache",
+            browser.name,
+          );
           items.push(...cacheItems);
         }
 
         // Scan cookies
         const cookieFiles = [
-          path.join(profilePath, 'Cookies'),
-          path.join(profilePath, 'Network', 'Cookies'),
+          path.join(profilePath, "Cookies"),
+          path.join(profilePath, "Network", "Cookies"),
         ];
 
         for (const cookieFile of cookieFiles) {
           try {
             const stats = await fs.stat(cookieFile);
             items.push({
-              type: 'cookies',
+              type: "cookies",
               path: cookieFile,
               size: stats.size,
               browser: browser.name,
@@ -140,15 +187,15 @@ export class PrivacySweepService {
 
         // Scan history
         const historyFiles = [
-          path.join(profilePath, 'History'),
-          path.join(profilePath, 'places.sqlite'),
+          path.join(profilePath, "History"),
+          path.join(profilePath, "places.sqlite"),
         ];
 
         for (const historyFile of historyFiles) {
           try {
             const stats = await fs.stat(historyFile);
             items.push({
-              type: 'history',
+              type: "history",
               path: historyFile,
               size: stats.size,
               browser: browser.name,
@@ -157,7 +204,6 @@ export class PrivacySweepService {
             // File doesn't exist
           }
         }
-
       } catch (error) {
         console.error(`Error scanning profile ${profile}:`, error);
       }
@@ -166,7 +212,11 @@ export class PrivacySweepService {
     return items;
   }
 
-  private async scanDirectory(dirPath: string, type: PrivacyItem['type'], browser: string): Promise<PrivacyItem[]> {
+  private async scanDirectory(
+    dirPath: string,
+    type: PrivacyItem["type"],
+    browser: string,
+  ): Promise<PrivacyItem[]> {
     const items: PrivacyItem[] = [];
 
     try {
@@ -199,20 +249,22 @@ export class PrivacySweepService {
     return items;
   }
 
-  async cleanItems(itemPaths: string[]): Promise<{ success: boolean; cleanedSize: number }> {
+  async cleanItems(
+    itemPaths: string[],
+  ): Promise<{ success: boolean; cleanedSize: number }> {
     let cleanedSize = 0;
     let success = true;
 
     for (const itemPath of itemPaths) {
       try {
         const stats = await fs.stat(itemPath);
-        
+
         if (stats.isDirectory()) {
           await fs.rm(itemPath, { recursive: true, force: true });
         } else {
           await fs.unlink(itemPath);
         }
-        
+
         cleanedSize += stats.size;
       } catch (error) {
         console.error(`Failed to clean ${itemPath}:`, error);
@@ -223,22 +275,30 @@ export class PrivacySweepService {
     return { success, cleanedSize };
   }
 
-  async cleanByType(type: PrivacyItem['type']): Promise<{ success: boolean; cleanedSize: number }> {
+  async cleanByType(
+    type: PrivacyItem["type"],
+  ): Promise<{ success: boolean; cleanedSize: number }> {
     const browsers = await this.scan();
-    const itemsToClean = browsers.flatMap(b => b.items.filter(i => i.type === type));
-    
-    return await this.cleanItems(itemsToClean.map(i => i.path));
+    const itemsToClean = browsers.flatMap((b) =>
+      b.items.filter((i) => i.type === type),
+    );
+
+    return await this.cleanItems(itemsToClean.map((i) => i.path));
   }
 
-  async cleanByBrowser(browserName: string): Promise<{ success: boolean; cleanedSize: number }> {
+  async cleanByBrowser(
+    browserName: string,
+  ): Promise<{ success: boolean; cleanedSize: number }> {
     const browsers = await this.scan();
-    const browser = browsers.find(b => b.name.toLowerCase() === browserName.toLowerCase());
-    
+    const browser = browsers.find(
+      (b) => b.name.toLowerCase() === browserName.toLowerCase(),
+    );
+
     if (!browser) {
       return { success: false, cleanedSize: 0 };
     }
 
-    return await this.cleanItems(browser.items.map(i => i.path));
+    return await this.cleanItems(browser.items.map((i) => i.path));
   }
 }
 

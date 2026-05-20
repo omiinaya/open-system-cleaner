@@ -1,13 +1,13 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { app } from 'electron';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { app } from "electron";
 
 export interface AuditEntry {
   id: string;
   timestamp: string;
   action: string;
   module: string;
-  status: 'success' | 'failure' | 'warning';
+  status: "success" | "failure" | "warning";
   details: Record<string, any>;
   userId?: string;
 }
@@ -19,8 +19,8 @@ export class AuditLogger {
   private maxLogFiles = 5;
 
   constructor() {
-    this.logDir = path.join(app.getPath('userData'), 'logs');
-    this.currentLogFile = path.join(this.logDir, 'audit.log');
+    this.logDir = path.join(app.getPath("userData"), "logs");
+    this.currentLogFile = path.join(this.logDir, "audit.log");
     this.ensureLogDirectory();
   }
 
@@ -28,7 +28,7 @@ export class AuditLogger {
     try {
       await fs.mkdir(this.logDir, { recursive: true });
     } catch (error) {
-      console.error('Failed to create log directory:', error);
+      console.error("Failed to create log directory:", error);
     }
   }
 
@@ -39,8 +39,8 @@ export class AuditLogger {
   async log(
     action: string,
     module: string,
-    status: 'success' | 'failure' | 'warning',
-    details: Record<string, any> = {}
+    status: "success" | "failure" | "warning",
+    details: Record<string, any> = {},
   ): Promise<void> {
     const entry: AuditEntry = {
       id: this.generateId(),
@@ -56,10 +56,10 @@ export class AuditLogger {
       await this.rotateLogsIfNeeded();
 
       // Append to log file
-      const logLine = JSON.stringify(entry) + '\n';
-      await fs.appendFile(this.currentLogFile, logLine, 'utf-8');
+      const logLine = JSON.stringify(entry) + "\n";
+      await fs.appendFile(this.currentLogFile, logLine, "utf-8");
     } catch (error) {
-      console.error('Failed to write audit log:', error);
+      console.error("Failed to write audit log:", error);
     }
   }
 
@@ -89,7 +89,10 @@ export class AuditLogger {
 
     // Move current log to .1
     try {
-      await fs.rename(this.currentLogFile, path.join(this.logDir, 'audit.log.1'));
+      await fs.rename(
+        this.currentLogFile,
+        path.join(this.logDir, "audit.log.1"),
+      );
     } catch {
       // File might not exist
     }
@@ -97,9 +100,12 @@ export class AuditLogger {
 
   async getRecentLogs(count = 100): Promise<AuditEntry[]> {
     try {
-      const content = await fs.readFile(this.currentLogFile, 'utf-8');
-      const lines = content.trim().split('\n').filter(line => line);
-      const entries = lines.map(line => JSON.parse(line) as AuditEntry);
+      const content = await fs.readFile(this.currentLogFile, "utf-8");
+      const lines = content
+        .trim()
+        .split("\n")
+        .filter((line) => line);
+      const entries = lines.map((line) => JSON.parse(line) as AuditEntry);
       return entries.slice(-count);
     } catch {
       return [];
@@ -108,12 +114,12 @@ export class AuditLogger {
 
   async getLogsByAction(action: string, count = 50): Promise<AuditEntry[]> {
     const logs = await this.getRecentLogs(count * 2);
-    return logs.filter(log => log.action === action).slice(0, count);
+    return logs.filter((log) => log.action === action).slice(0, count);
   }
 
   async getLogsByModule(module: string, count = 50): Promise<AuditEntry[]> {
     const logs = await this.getRecentLogs(count * 2);
-    return logs.filter(log => log.module === module).slice(0, count);
+    return logs.filter((log) => log.module === module).slice(0, count);
   }
 
   async clearLogs(): Promise<void> {

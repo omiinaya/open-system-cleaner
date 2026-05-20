@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '../../utils/cn';
+import React, { useState, useRef, useEffect } from "react";
+import { cn } from "../../utils/cn";
 
-export type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
+export type TooltipPosition = "top" | "bottom" | "left" | "right";
 
 export interface TooltipProps {
   children: React.ReactElement;
@@ -16,7 +16,7 @@ export interface TooltipProps {
 const Tooltip: React.FC<TooltipProps> = ({
   children,
   content,
-  position = 'top',
+  position = "top",
   delay = 200,
   disabled = false,
   className,
@@ -39,19 +39,19 @@ const Tooltip: React.FC<TooltipProps> = ({
     let left = 0;
 
     switch (position) {
-      case 'top':
+      case "top":
         top = triggerRect.top - tooltipRect.height - spacing;
         left = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
         break;
-      case 'bottom':
+      case "bottom":
         top = triggerRect.bottom + spacing;
         left = triggerRect.left + (triggerRect.width - tooltipRect.width) / 2;
         break;
-      case 'left':
+      case "left":
         top = triggerRect.top + (triggerRect.height - tooltipRect.height) / 2;
         left = triggerRect.left - tooltipRect.width - spacing;
         break;
-      case 'right':
+      case "right":
         top = triggerRect.top + (triggerRect.height - tooltipRect.height) / 2;
         left = triggerRect.right + spacing;
         break;
@@ -101,12 +101,12 @@ const Tooltip: React.FC<TooltipProps> = ({
       }
     };
 
-    window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('resize', handleScroll);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleScroll);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -114,17 +114,17 @@ const Tooltip: React.FC<TooltipProps> = ({
   }, [isVisible]);
 
   const positionClasses = {
-    top: 'mb-2',
-    bottom: 'mt-2',
-    left: 'mr-2',
-    right: 'ml-2',
+    top: "mb-2",
+    bottom: "mt-2",
+    left: "mr-2",
+    right: "ml-2",
   };
 
   const arrowClasses = {
-    top: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45',
-    bottom: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45',
-    left: 'right-0 top-1/2 translate-x-1/2 -translate-y-1/2 rotate-45',
-    right: 'left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45',
+    top: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45",
+    bottom: "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45",
+    left: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2 rotate-45",
+    right: "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45",
   };
 
   return (
@@ -139,18 +139,18 @@ const Tooltip: React.FC<TooltipProps> = ({
       })}
 
       {isVisible &&
-        typeof document !== 'undefined' &&
+        typeof document !== "undefined" &&
         content &&
         ReactDOM.createPortal(
           <div
             ref={tooltipRef}
             className={cn(
-              'fixed z-50 px-3 py-2 max-w-xs',
-              'bg-text-primary text-bg-primary text-sm rounded-md',
-              'shadow-lg pointer-events-none',
-              'animate-fade-in',
+              "fixed z-50 px-3 py-2 max-w-xs",
+              "bg-text-primary text-bg-primary text-sm rounded-md",
+              "shadow-lg pointer-events-none",
+              "animate-fade-in",
               positionClasses[position],
-              contentClassName
+              contentClassName,
             )}
             style={{
               top: coords.top,
@@ -161,18 +161,18 @@ const Tooltip: React.FC<TooltipProps> = ({
             {content}
             <span
               className={cn(
-                'absolute w-2 h-2 bg-text-primary',
-                arrowClasses[position]
+                "absolute w-2 h-2 bg-text-primary",
+                arrowClasses[position],
               )}
             />
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );
 };
 
 // Need to import ReactDOM for portal
-import ReactDOM from 'react-dom';
+import ReactDOM from "react-dom";
 
 export default Tooltip;

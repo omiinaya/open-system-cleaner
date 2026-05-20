@@ -1,6 +1,6 @@
-import * as os from 'os';
-import si from 'systeminformation';
-import { auditLogger } from './auditLogger';
+import * as os from "os";
+import si from "systeminformation";
+import { auditLogger } from "./auditLogger";
 
 export interface ProcessBehavior {
   pid: number;
@@ -20,7 +20,7 @@ export interface ProcessBehavior {
   }[];
   fileAccessHistory: {
     path: string;
-    operation: 'read' | 'write' | 'delete';
+    operation: "read" | "write" | "delete";
     timestamp: number;
   }[];
 }
@@ -28,9 +28,9 @@ export interface ProcessBehavior {
 export interface ThreatAssessment {
   isMalicious: boolean;
   confidence: number; // 0-1
-  threatLevel: 'low' | 'medium' | 'high' | 'critical';
+  threatLevel: "low" | "medium" | "high" | "critical";
   reasons: string[];
-  recommendedAction: 'ignore' | 'monitor' | 'terminate' | 'quarantine';
+  recommendedAction: "ignore" | "monitor" | "terminate" | "quarantine";
 }
 
 export class BehavioralAnalyzer {
@@ -71,7 +71,12 @@ export class BehavioralAnalyzer {
       await this.sampleProcesses();
     }, this.SAMPLING_INTERVAL);
 
-    auditLogger.log('behavioral_analysis_started', 'behavioralAnalyzer', 'success', {});
+    auditLogger.log(
+      "behavioral_analysis_started",
+      "behavioralAnalyzer",
+      "success",
+      {},
+    );
   }
 
   /**
@@ -82,7 +87,12 @@ export class BehavioralAnalyzer {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
 
-      auditLogger.log('behavioral_analysis_stopped', 'behavioralAnalyzer', 'success', {});
+      auditLogger.log(
+        "behavioral_analysis_stopped",
+        "behavioralAnalyzer",
+        "success",
+        {},
+      );
     }
   }
 
@@ -125,7 +135,7 @@ export class BehavioralAnalyzer {
       // Cleanup old processes
       this.cleanupOldProcesses();
     } catch (error) {
-      console.error('Error sampling processes:', error);
+      console.error("Error sampling processes:", error);
     }
   }
 
@@ -167,9 +177,9 @@ export class BehavioralAnalyzer {
       return {
         isMalicious: false,
         confidence: 0,
-        threatLevel: 'low',
+        threatLevel: "low",
         reasons: [],
-        recommendedAction: 'ignore',
+        recommendedAction: "ignore",
       };
     }
 
@@ -178,41 +188,41 @@ export class BehavioralAnalyzer {
 
     // Check for cryptomining patterns
     if (this.hasCryptominingPattern(behavior)) {
-      reasons.push('Sustained high CPU usage pattern (possible cryptominer)');
+      reasons.push("Sustained high CPU usage pattern (possible cryptominer)");
       threatScore += 0.4;
     }
 
     // Check for ransomware patterns
     if (this.hasRansomwarePattern(behavior)) {
-      reasons.push('Rapid file system modifications (possible ransomware)');
+      reasons.push("Rapid file system modifications (possible ransomware)");
       threatScore += 0.5;
     }
 
     // Check for trojan patterns
     if (this.hasTrojanPattern(behavior)) {
-      reasons.push('Suspicious network activity (possible trojan)');
+      reasons.push("Suspicious network activity (possible trojan)");
       threatScore += 0.3;
     }
 
     // Check for memory leaks
     if (this.hasMemoryLeakPattern(behavior)) {
-      reasons.push('Memory leak detected');
+      reasons.push("Memory leak detected");
       threatScore += 0.1;
     }
 
     // Determine threat level and action
-    let threatLevel: ThreatAssessment['threatLevel'] = 'low';
-    let recommendedAction: ThreatAssessment['recommendedAction'] = 'ignore';
+    let threatLevel: ThreatAssessment["threatLevel"] = "low";
+    let recommendedAction: ThreatAssessment["recommendedAction"] = "ignore";
 
     if (threatScore >= 0.8) {
-      threatLevel = 'critical';
-      recommendedAction = 'quarantine';
+      threatLevel = "critical";
+      recommendedAction = "quarantine";
     } else if (threatScore >= 0.6) {
-      threatLevel = 'high';
-      recommendedAction = 'terminate';
+      threatLevel = "high";
+      recommendedAction = "terminate";
     } else if (threatScore >= 0.4) {
-      threatLevel = 'medium';
-      recommendedAction = 'monitor';
+      threatLevel = "medium";
+      recommendedAction = "monitor";
     }
 
     return {
@@ -253,7 +263,7 @@ export class BehavioralAnalyzer {
   private hasRansomwarePattern(behavior: ProcessBehavior): boolean {
     // Check for rapid file access
     const recentAccess = behavior.fileAccessHistory.filter(
-      a => Date.now() - a.timestamp < 10000 // Last 10 seconds
+      (a) => Date.now() - a.timestamp < 10000, // Last 10 seconds
     );
 
     if (recentAccess.length > this.thresholds.ransomware.fileAccessRate * 10) {
@@ -261,8 +271,8 @@ export class BehavioralAnalyzer {
     }
 
     // Check for write operations to many different files
-    const writeOperations = recentAccess.filter(a => a.operation === 'write');
-    const uniquePaths = new Set(writeOperations.map(a => a.path)).size;
+    const writeOperations = recentAccess.filter((a) => a.operation === "write");
+    const uniquePaths = new Set(writeOperations.map((a) => a.path)).size;
 
     if (uniquePaths > 10) {
       return true;
@@ -320,9 +330,9 @@ export class BehavioralAnalyzer {
   private async handleThreat(
     pid: number,
     processName: string,
-    assessment: ThreatAssessment
+    assessment: ThreatAssessment,
   ): Promise<void> {
-    await auditLogger.log('threat_detected', 'behavioralAnalyzer', 'warning', {
+    await auditLogger.log("threat_detected", "behavioralAnalyzer", "warning", {
       pid,
       processName,
       threatLevel: assessment.threatLevel,
@@ -345,8 +355,12 @@ export class BehavioralAnalyzer {
     for (const [pid, behavior] of this.behaviors.entries()) {
       // Check if process is still running
       const lastActivity = Math.max(
-        ...behavior.cpuHistory.map((_, i) => Date.now() - (behavior.cpuHistory.length - i) * this.SAMPLING_INTERVAL),
-        behavior.startTime
+        ...behavior.cpuHistory.map(
+          (_, i) =>
+            Date.now() -
+            (behavior.cpuHistory.length - i) * this.SAMPLING_INTERVAL,
+        ),
+        behavior.startTime,
       );
 
       if (now - lastActivity > maxAge) {
@@ -375,7 +389,7 @@ export class BehavioralAnalyzer {
   recordFileAccess(
     pid: number,
     filePath: string,
-    operation: 'read' | 'write' | 'delete'
+    operation: "read" | "write" | "delete",
   ): void {
     const behavior = this.behaviors.get(pid);
     if (!behavior) {
@@ -397,11 +411,7 @@ export class BehavioralAnalyzer {
   /**
    * Record network activity for a process
    */
-  recordNetworkActivity(
-    pid: number,
-    upload: number,
-    download: number
-  ): void {
+  recordNetworkActivity(pid: number, upload: number, download: number): void {
     const behavior = this.behaviors.get(pid);
     if (!behavior) {
       return;

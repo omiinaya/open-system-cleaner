@@ -1,10 +1,10 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as path from 'path';
-import * as fs from 'fs/promises';
-import { app } from 'electron';
-import { auditLogger } from './auditLogger';
-import { formatBytes } from '../utils/formatters';
+import { exec } from "child_process";
+import { promisify } from "util";
+import * as path from "path";
+import * as fs from "fs/promises";
+import { app } from "electron";
+import { auditLogger } from "./auditLogger";
+import { formatBytes } from "../utils/formatters";
 
 const execAsync = promisify(exec);
 
@@ -22,7 +22,7 @@ export class RegistryBackupService {
   private maxBackups = 10;
 
   constructor() {
-    this.backupDir = path.join(app.getPath('userData'), 'registry-backups');
+    this.backupDir = path.join(app.getPath("userData"), "registry-backups");
     this.ensureBackupDirectory();
   }
 
@@ -30,7 +30,7 @@ export class RegistryBackupService {
     try {
       await fs.mkdir(this.backupDir, { recursive: true });
     } catch (error) {
-      console.error('Failed to create registry backup directory:', error);
+      console.error("Failed to create registry backup directory:", error);
     }
   }
 
@@ -44,16 +44,27 @@ export class RegistryBackupService {
     const filePath = path.join(this.backupDir, fileName);
 
     try {
-      await auditLogger.log('registry_backup_started', 'registryBackup', 'success', {
-        description,
-      });
+      await auditLogger.log(
+        "registry_backup_started",
+        "registryBackup",
+        "success",
+        {
+          description,
+        },
+      );
 
       // Export key registry hives
       const hives = [
-        { name: 'HKCU-Software', path: 'HKCU\\Software' },
-        { name: 'HKLM-Software', path: 'HKLM\\Software' },
-        { name: 'HKCU-Run', path: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' },
-        { name: 'HKLM-Run', path: 'HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' },
+        { name: "HKCU-Software", path: "HKCU\\Software" },
+        { name: "HKLM-Software", path: "HKLM\\Software" },
+        {
+          name: "HKCU-Run",
+          path: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        },
+        {
+          name: "HKLM-Run",
+          path: "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        },
       ];
 
       let totalSize = 0;
@@ -63,9 +74,9 @@ export class RegistryBackupService {
         try {
           const hiveFileName = `registry-backup-${timestamp}-${hive.name}.reg`;
           const hiveFilePath = path.join(this.backupDir, hiveFileName);
-          
+
           await execAsync(`reg export "${hive.path}" "${hiveFilePath}" /y`);
-          
+
           const stats = await fs.stat(hiveFilePath);
           totalSize += stats.size;
           backedUpHives.push(hive.name);
@@ -91,19 +102,29 @@ export class RegistryBackupService {
       // Cleanup old backups
       await this.cleanupOldBackups();
 
-      await auditLogger.log('registry_backup_completed', 'registryBackup', 'success', {
-        id,
-        description,
-        size: totalSize,
-        hives: backedUpHives,
-      });
+      await auditLogger.log(
+        "registry_backup_completed",
+        "registryBackup",
+        "success",
+        {
+          id,
+          description,
+          size: totalSize,
+          hives: backedUpHives,
+        },
+      );
 
       return backup;
     } catch (error) {
-      await auditLogger.log('registry_backup_failed', 'registryBackup', 'failure', {
-        description,
-        error: String(error),
-      });
+      await auditLogger.log(
+        "registry_backup_failed",
+        "registryBackup",
+        "failure",
+        {
+          description,
+          error: String(error),
+        },
+      );
       throw error;
     }
   }
@@ -114,13 +135,18 @@ export class RegistryBackupService {
   async restoreBackup(backupId: string): Promise<boolean> {
     try {
       const manifestPath = path.join(this.backupDir, `${backupId}.json`);
-      const manifestContent = await fs.readFile(manifestPath, 'utf-8');
+      const manifestContent = await fs.readFile(manifestPath, "utf-8");
       const backup: RegistryBackup = JSON.parse(manifestContent);
 
-      await auditLogger.log('registry_restore_started', 'registryBackup', 'success', {
-        backupId,
-        description: backup.description,
-      });
+      await auditLogger.log(
+        "registry_restore_started",
+        "registryBackup",
+        "success",
+        {
+          backupId,
+          description: backup.description,
+        },
+      );
 
       // Restore each hive
       for (const hiveName of backup.hives) {
@@ -136,16 +162,26 @@ export class RegistryBackupService {
         }
       }
 
-      await auditLogger.log('registry_restore_completed', 'registryBackup', 'success', {
-        backupId,
-      });
+      await auditLogger.log(
+        "registry_restore_completed",
+        "registryBackup",
+        "success",
+        {
+          backupId,
+        },
+      );
 
       return true;
     } catch (error) {
-      await auditLogger.log('registry_restore_failed', 'registryBackup', 'failure', {
-        backupId,
-        error: String(error),
-      });
+      await auditLogger.log(
+        "registry_restore_failed",
+        "registryBackup",
+        "failure",
+        {
+          backupId,
+          error: String(error),
+        },
+      );
       return false;
     }
   }
@@ -159,9 +195,12 @@ export class RegistryBackupService {
       const backups: RegistryBackup[] = [];
 
       for (const entry of entries) {
-        if (entry.endsWith('.json')) {
+        if (entry.endsWith(".json")) {
           try {
-            const content = await fs.readFile(path.join(this.backupDir, entry), 'utf-8');
+            const content = await fs.readFile(
+              path.join(this.backupDir, entry),
+              "utf-8",
+            );
             backups.push(JSON.parse(content));
           } catch {
             // Skip corrupted manifests
@@ -182,7 +221,7 @@ export class RegistryBackupService {
   async deleteBackup(backupId: string): Promise<boolean> {
     try {
       const manifestPath = path.join(this.backupDir, `${backupId}.json`);
-      const manifestContent = await fs.readFile(manifestPath, 'utf-8');
+      const manifestContent = await fs.readFile(manifestPath, "utf-8");
       const backup: RegistryBackup = JSON.parse(manifestContent);
 
       // Delete manifest
@@ -199,13 +238,18 @@ export class RegistryBackupService {
         }
       }
 
-      await auditLogger.log('registry_backup_deleted', 'registryBackup', 'success', {
-        backupId,
-      });
+      await auditLogger.log(
+        "registry_backup_deleted",
+        "registryBackup",
+        "success",
+        {
+          backupId,
+        },
+      );
 
       return true;
     } catch (error) {
-      console.error('Failed to delete backup:', error);
+      console.error("Failed to delete backup:", error);
       return false;
     }
   }
@@ -216,16 +260,16 @@ export class RegistryBackupService {
   private async cleanupOldBackups(): Promise<void> {
     try {
       const backups = await this.listBackups();
-      
+
       if (backups.length > this.maxBackups) {
         const toDelete = backups.slice(this.maxBackups);
-        
+
         for (const backup of toDelete) {
           await this.deleteBackup(backup.id);
         }
       }
     } catch (error) {
-      console.error('Failed to cleanup old backups:', error);
+      console.error("Failed to cleanup old backups:", error);
     }
   }
 
@@ -245,8 +289,12 @@ export class RegistryBackupService {
       return {
         totalBackups: backups.length,
         totalSize,
-        oldestBackup: backups.length > 0 ? new Date(backups[backups.length - 1].timestamp) : null,
-        newestBackup: backups.length > 0 ? new Date(backups[0].timestamp) : null,
+        oldestBackup:
+          backups.length > 0
+            ? new Date(backups[backups.length - 1].timestamp)
+            : null,
+        newestBackup:
+          backups.length > 0 ? new Date(backups[0].timestamp) : null,
       };
     } catch {
       return {

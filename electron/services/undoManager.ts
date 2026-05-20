@@ -1,7 +1,7 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { app } from 'electron';
-import { auditLogger } from './auditLogger';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { app } from "electron";
+import { auditLogger } from "./auditLogger";
 
 export interface UndoableAction {
   id: string;
@@ -29,7 +29,10 @@ export class UndoManager {
   private persistencePath: string;
 
   constructor() {
-    this.persistencePath = path.join(app.getPath('userData'), 'undo-history.json');
+    this.persistencePath = path.join(
+      app.getPath("userData"),
+      "undo-history.json",
+    );
     this.loadHistory();
   }
 
@@ -42,7 +45,7 @@ export class UndoManager {
     action: () => Promise<T>,
     undo: () => Promise<void>,
     redo: () => Promise<void>,
-    metadata: Record<string, any> = {}
+    metadata: Record<string, any> = {},
   ): Promise<T> {
     const result = await action();
 
@@ -70,7 +73,7 @@ export class UndoManager {
     // Persist to disk
     await this.saveHistory();
 
-    await auditLogger.log('action_executed', 'undoManager', 'success', {
+    await auditLogger.log("action_executed", "undoManager", "success", {
       actionId: undoableAction.id,
       description,
       module,
@@ -92,12 +95,12 @@ export class UndoManager {
     if (!action) {
       return {
         success: false,
-        message: 'Nothing to undo',
+        message: "Nothing to undo",
       };
     }
 
     try {
-      await auditLogger.log('undo_started', 'undoManager', 'success', {
+      await auditLogger.log("undo_started", "undoManager", "success", {
         actionId: action.id,
         description: action.description,
       });
@@ -109,7 +112,7 @@ export class UndoManager {
 
       await this.saveHistory();
 
-      await auditLogger.log('undo_completed', 'undoManager', 'success', {
+      await auditLogger.log("undo_completed", "undoManager", "success", {
         actionId: action.id,
       });
 
@@ -122,7 +125,7 @@ export class UndoManager {
       // Put action back if undo failed
       this.actions.push(action);
 
-      await auditLogger.log('undo_failed', 'undoManager', 'failure', {
+      await auditLogger.log("undo_failed", "undoManager", "failure", {
         actionId: action.id,
         error: String(error),
       });
@@ -148,12 +151,12 @@ export class UndoManager {
     if (!action) {
       return {
         success: false,
-        message: 'Nothing to redo',
+        message: "Nothing to redo",
       };
     }
 
     try {
-      await auditLogger.log('redo_started', 'undoManager', 'success', {
+      await auditLogger.log("redo_started", "undoManager", "success", {
         actionId: action.id,
         description: action.description,
       });
@@ -165,7 +168,7 @@ export class UndoManager {
 
       await this.saveHistory();
 
-      await auditLogger.log('redo_completed', 'undoManager', 'success', {
+      await auditLogger.log("redo_completed", "undoManager", "success", {
         actionId: action.id,
       });
 
@@ -178,7 +181,7 @@ export class UndoManager {
       // Put action back if redo failed
       this.redoStack.push(action);
 
-      await auditLogger.log('redo_failed', 'undoManager', 'failure', {
+      await auditLogger.log("redo_failed", "undoManager", "failure", {
         actionId: action.id,
         error: String(error),
       });
@@ -209,14 +212,14 @@ export class UndoManager {
    * Get the list of undoable actions
    */
   getUndoStack(): SerializedAction[] {
-    return this.actions.map(a => this.serializeAction(a));
+    return this.actions.map((a) => this.serializeAction(a));
   }
 
   /**
    * Get the list of redoable actions
    */
   getRedoStack(): SerializedAction[] {
-    return this.redoStack.map(a => this.serializeAction(a));
+    return this.redoStack.map((a) => this.serializeAction(a));
   }
 
   /**
@@ -227,7 +230,7 @@ export class UndoManager {
     this.redoStack = [];
     await this.saveHistory();
 
-    await auditLogger.log('history_cleared', 'undoManager', 'success', {});
+    await auditLogger.log("history_cleared", "undoManager", "success", {});
   }
 
   /**
@@ -237,7 +240,7 @@ export class UndoManager {
     return this.actions
       .slice(-count)
       .reverse()
-      .map(a => this.serializeAction(a));
+      .map((a) => this.serializeAction(a));
   }
 
   /**
@@ -258,11 +261,11 @@ export class UndoManager {
    * Determine action type from metadata
    */
   private getActionType(action: UndoableAction): string {
-    if (action.metadata.filesDeleted) return 'delete';
-    if (action.metadata.registryModified) return 'registry';
-    if (action.metadata.processesTerminated) return 'process';
-    if (action.metadata.startupModified) return 'startup';
-    return 'generic';
+    if (action.metadata.filesDeleted) return "delete";
+    if (action.metadata.registryModified) return "registry";
+    if (action.metadata.processesTerminated) return "process";
+    if (action.metadata.startupModified) return "startup";
+    return "generic";
   }
 
   /**
@@ -271,12 +274,12 @@ export class UndoManager {
   private async saveHistory(): Promise<void> {
     try {
       const data = {
-        actions: this.actions.map(a => this.serializeAction(a)),
-        redoStack: this.redoStack.map(a => this.serializeAction(a)),
+        actions: this.actions.map((a) => this.serializeAction(a)),
+        redoStack: this.redoStack.map((a) => this.serializeAction(a)),
       };
       await fs.writeFile(this.persistencePath, JSON.stringify(data, null, 2));
     } catch (error) {
-      console.error('Failed to save undo history:', error);
+      console.error("Failed to save undo history:", error);
     }
   }
 
@@ -285,12 +288,12 @@ export class UndoManager {
    */
   private async loadHistory(): Promise<void> {
     try {
-      const content = await fs.readFile(this.persistencePath, 'utf-8');
+      const content = await fs.readFile(this.persistencePath, "utf-8");
       const data = JSON.parse(content);
 
       // Note: We can only restore the metadata, not the actual undo/redo functions
       // The functions would need to be recreated based on the action type
-      console.log('Loaded undo history:', data.actions.length, 'actions');
+      console.log("Loaded undo history:", data.actions.length, "actions");
     } catch {
       // File doesn't exist or is corrupted
       this.actions = [];
@@ -304,11 +307,11 @@ export class UndoManager {
   async createFileDeleteAction(
     filePaths: string[],
     trashPaths: string[],
-    description: string
+    description: string,
   ): Promise<void> {
     await this.execute(
       description,
-      'junkFileCleaner',
+      "junkFileCleaner",
       async () => {
         // Action already performed
         return true;
@@ -337,7 +340,7 @@ export class UndoManager {
         filesDeleted: filePaths,
         trashPaths,
         fileCount: filePaths.length,
-      }
+      },
     );
   }
 }

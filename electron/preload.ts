@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
 // Define the API interface for type safety
 declare global {
@@ -107,38 +107,42 @@ export interface ProtectionResult {
 // the ipcRenderer without exposing the entire object
 const api: ElectronAPI = {
   // System operations
-  getSystemInfo: () => ipcRenderer.invoke('system:getInfo'),
+  getSystemInfo: () => ipcRenderer.invoke("system:getInfo"),
 
   // Cleanup operations
-  scanJunkFiles: () => ipcRenderer.invoke('cleanup:scanJunkFiles'),
-  cleanJunkFiles: (paths: string[]) => ipcRenderer.invoke('cleanup:cleanJunkFiles', paths),
-  scanRegistry: () => ipcRenderer.invoke('cleanup:scanRegistry'),
-  fixRegistry: (issues: string[]) => ipcRenderer.invoke('cleanup:fixRegistry', issues),
+  scanJunkFiles: () => ipcRenderer.invoke("cleanup:scanJunkFiles"),
+  cleanJunkFiles: (paths: string[]) =>
+    ipcRenderer.invoke("cleanup:cleanJunkFiles", paths),
+  scanRegistry: () => ipcRenderer.invoke("cleanup:scanRegistry"),
+  fixRegistry: (issues: string[]) =>
+    ipcRenderer.invoke("cleanup:fixRegistry", issues),
 
   // Optimization operations
-  boostPerformance: () => ipcRenderer.invoke('optimization:boostPerformance'),
-  optimizeStartup: () => ipcRenderer.invoke('optimization:optimizeStartup'),
-  optimizeRAM: () => ipcRenderer.invoke('optimization:optimizeRAM'),
+  boostPerformance: () => ipcRenderer.invoke("optimization:boostPerformance"),
+  optimizeStartup: () => ipcRenderer.invoke("optimization:optimizeStartup"),
+  optimizeRAM: () => ipcRenderer.invoke("optimization:optimizeRAM"),
 
   // Security operations
-  scanVulnerabilities: () => ipcRenderer.invoke('security:scanVulnerabilities'),
-  enableSystemHardeningMonitor: (enabled: boolean) => ipcRenderer.invoke('security:enableSystemHardeningMonitor', enabled),
+  scanVulnerabilities: () => ipcRenderer.invoke("security:scanVulnerabilities"),
+  enableSystemHardeningMonitor: (enabled: boolean) =>
+    ipcRenderer.invoke("security:enableSystemHardeningMonitor", enabled),
 
   // App operations
-  getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
-  quitApp: () => ipcRenderer.invoke('app:quit'),
+  getAppVersion: () => ipcRenderer.invoke("app:getVersion"),
+  quitApp: () => ipcRenderer.invoke("app:quit"),
 
   // Event listeners for real-time updates
   onSystemUpdate: (callback: (data: SystemInfo) => void) => {
-    const handler = (_event: IpcRendererEvent, data: SystemInfo) => callback(data);
-    ipcRenderer.on('system:update', handler);
+    const handler = (_event: IpcRendererEvent, data: SystemInfo) =>
+      callback(data);
+    ipcRenderer.on("system:update", handler);
   },
   removeSystemUpdateListener: () => {
-    ipcRenderer.removeAllListeners('system:update');
+    ipcRenderer.removeAllListeners("system:update");
   },
 };
 
 // Expose the API to the renderer process
-contextBridge.exposeInMainWorld('electronAPI', api);
+contextBridge.exposeInMainWorld("electronAPI", api);
 
-console.log('Preload script loaded successfully');
+console.log("Preload script loaded successfully");

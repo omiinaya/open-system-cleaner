@@ -1,12 +1,12 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as crypto from 'crypto';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import * as fs from "fs/promises";
+import * as path from "path";
+import * as crypto from "crypto";
+import { exec } from "child_process";
+import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
-export type ShreddingMethod = 'standard' | 'secure' | 'military';
+export type ShreddingMethod = "standard" | "secure" | "military";
 
 export interface ShredResult {
   success: boolean;
@@ -17,12 +17,15 @@ export interface ShredResult {
 
 export class FileShredderService {
   private methods = {
-    standard: { passes: 1, pattern: 'random' },
-    secure: { passes: 3, pattern: 'dod5220' },
-    military: { passes: 7, pattern: 'gutmann' },
+    standard: { passes: 1, pattern: "random" },
+    secure: { passes: 3, pattern: "dod5220" },
+    military: { passes: 7, pattern: "gutmann" },
   };
 
-  async shredFiles(filePaths: string[], method: ShreddingMethod = 'standard'): Promise<ShredResult> {
+  async shredFiles(
+    filePaths: string[],
+    method: ShreddingMethod = "standard",
+  ): Promise<ShredResult> {
     const result: ShredResult = {
       success: true,
       filesShredded: 0,
@@ -37,7 +40,9 @@ export class FileShredderService {
           result.filesShredded++;
           result.spaceFreed += shredResult.size;
         } else {
-          result.errors.push(`Failed to shred ${filePath}: ${shredResult.error}`);
+          result.errors.push(
+            `Failed to shred ${filePath}: ${shredResult.error}`,
+          );
         }
       } catch (error) {
         result.errors.push(`Error shredding ${filePath}: ${error}`);
@@ -51,7 +56,7 @@ export class FileShredderService {
 
   private async shredFile(
     filePath: string,
-    method: ShreddingMethod
+    method: ShreddingMethod,
   ): Promise<{ success: boolean; size: number; error?: string }> {
     try {
       const stats = await fs.stat(filePath);
@@ -67,7 +72,7 @@ export class FileShredderService {
       const fileSize = stats.size;
 
       // Open file for writing
-      const fd = await fs.open(filePath, 'r+');
+      const fd = await fs.open(filePath, "r+");
 
       try {
         const config = this.methods[method];
@@ -104,12 +109,15 @@ export class FileShredderService {
     }
   }
 
-  private async shredDirectory(dirPath: string, method: ShreddingMethod): Promise<void> {
+  private async shredDirectory(
+    dirPath: string,
+    method: ShreddingMethod,
+  ): Promise<void> {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
-      
+
       if (entry.isDirectory()) {
         await this.shredDirectory(fullPath, method);
       } else {
@@ -123,17 +131,17 @@ export class FileShredderService {
 
   private getPattern(pattern: string, pass: number, fileSize: number): Buffer {
     switch (pattern) {
-      case 'dod5220':
+      case "dod5220":
         // DoD 5220.22-M standard: pass 1 = 0x00, pass 2 = 0xFF, pass 3 = random
         if (pass === 0) return Buffer.alloc(fileSize, 0x00);
-        if (pass === 1) return Buffer.alloc(fileSize, 0xFF);
+        if (pass === 1) return Buffer.alloc(fileSize, 0xff);
         return crypto.randomBytes(fileSize);
-      
-      case 'gutmann':
+
+      case "gutmann":
         // Gutmann method: use specific patterns for each pass
         return this.getGutmannPattern(pass, fileSize);
-      
-      case 'random':
+
+      case "random":
       default:
         // Standard random overwrite
         return crypto.randomBytes(fileSize);
@@ -144,7 +152,7 @@ export class FileShredderService {
     // Simplified Gutmann patterns
     const patterns = [
       Buffer.from([0x55, 0x55]),
-      Buffer.from([0xAA, 0xAA]),
+      Buffer.from([0xaa, 0xaa]),
       Buffer.from([0x92, 0x49, 0x24]),
       Buffer.from([0x49, 0x24, 0x92]),
       Buffer.from([0x24, 0x92, 0x49]),
@@ -158,29 +166,32 @@ export class FileShredderService {
       Buffer.from([0x77]),
       Buffer.from([0x88]),
       Buffer.from([0x99]),
-      Buffer.from([0xAA]),
-      Buffer.from([0xBB]),
-      Buffer.from([0xCC]),
-      Buffer.from([0xDD]),
-      Buffer.from([0xEE]),
-      Buffer.from([0xFF]),
+      Buffer.from([0xaa]),
+      Buffer.from([0xbb]),
+      Buffer.from([0xcc]),
+      Buffer.from([0xdd]),
+      Buffer.from([0xee]),
+      Buffer.from([0xff]),
       Buffer.from([0x92, 0x49, 0x24]),
       Buffer.from([0x49, 0x24, 0x92]),
       Buffer.from([0x24, 0x92, 0x49]),
-      Buffer.from([0x6D, 0xB6, 0xDB]),
-      Buffer.from([0xB6, 0xDB, 0x6D]),
-      Buffer.from([0xDB, 0x6D, 0xB6]),
+      Buffer.from([0x6d, 0xb6, 0xdb]),
+      Buffer.from([0xb6, 0xdb, 0x6d]),
+      Buffer.from([0xdb, 0x6d, 0xb6]),
     ];
 
     if (pass < patterns.length) {
       return Buffer.alloc(fileSize, patterns[pass][0]);
     }
-    
+
     // Random for remaining passes
     return crypto.randomBytes(fileSize);
   }
 
-  private async writePattern(fd: fs.FileHandle, pattern: Buffer): Promise<void> {
+  private async writePattern(
+    fd: fs.FileHandle,
+    pattern: Buffer,
+  ): Promise<void> {
     const bufferSize = 4096;
     const fileSize = pattern.length;
     let written = 0;
@@ -198,18 +209,21 @@ export class FileShredderService {
   private async obscureFilename(filePath: string): Promise<void> {
     const dir = path.dirname(filePath);
     const ext = path.extname(filePath);
-    
+
     // Rename file multiple times with random names
     let currentPath = filePath;
     for (let i = 0; i < 3; i++) {
-      const randomName = crypto.randomBytes(16).toString('hex') + ext;
+      const randomName = crypto.randomBytes(16).toString("hex") + ext;
       const newPath = path.join(dir, randomName);
       await fs.rename(currentPath, newPath);
       currentPath = newPath;
     }
   }
 
-  async shredFreeSpace(drive: string, method: ShreddingMethod = 'secure'): Promise<ShredResult> {
+  async shredFreeSpace(
+    drive: string,
+    method: ShreddingMethod = "secure",
+  ): Promise<ShredResult> {
     const result: ShredResult = {
       success: true,
       filesShredded: 0,
@@ -220,31 +234,31 @@ export class FileShredderService {
     try {
       // Create a temporary file that fills the free space
       const tempFile = path.join(drive, `shred_temp_${Date.now()}.tmp`);
-      
+
       // Get available space
       const { stdout } = await execAsync(`df -B1 ${drive}`);
-      const lines = stdout.trim().split('\n');
+      const lines = stdout.trim().split("\n");
       const parts = lines[1].split(/\s+/);
       const availableSpace = parseInt(parts[3], 10);
 
       // Create and shred temp file
-      const fd = await fs.open(tempFile, 'w');
-      
+      const fd = await fs.open(tempFile, "w");
+
       try {
         const config = this.methods[method];
         const chunkSize = 1024 * 1024; // 1MB chunks
-        
+
         for (let pass = 0; pass < config.passes; pass++) {
           await fd.truncate(0);
           let written = 0;
-          
+
           while (written < availableSpace) {
             const toWrite = Math.min(chunkSize, availableSpace - written);
             const chunk = this.getPattern(config.pattern, pass, toWrite);
             await fd.write(chunk, 0, toWrite, written);
             written += toWrite;
           }
-          
+
           await fd.sync();
         }
       } finally {
@@ -253,7 +267,7 @@ export class FileShredderService {
 
       // Shred and delete the temp file
       await this.shredFile(tempFile, method);
-      
+
       result.filesShredded = 1;
       result.spaceFreed = availableSpace;
     } catch (error) {

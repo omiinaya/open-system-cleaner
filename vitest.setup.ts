@@ -1,18 +1,18 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock electron modules
-vi.mock('electron', () => ({
+vi.mock("electron", () => ({
   app: {
     getPath: vi.fn((name) => {
       const paths: Record<string, string> = {
-        userData: '/tmp/osc-test-user-data',
-        logs: '/tmp/osc-test-logs',
-        temp: '/tmp',
-        home: '/home/test',
+        userData: "/tmp/osc-test-user-data",
+        logs: "/tmp/osc-test-logs",
+        temp: "/tmp",
+        home: "/home/test",
       };
-      return paths[name] || '/tmp';
+      return paths[name] || "/tmp";
     }),
-    getVersion: vi.fn(() => '1.0.0'),
+    getVersion: vi.fn(() => "1.0.0"),
     on: vi.fn(),
     quit: vi.fn(),
   },
@@ -39,7 +39,7 @@ vi.mock('electron', () => ({
 }));
 
 // Mock systeminformation
-vi.mock('systeminformation', () => ({
+vi.mock("systeminformation", () => ({
   default: {
     currentLoad: vi.fn().mockResolvedValue({
       currentLoad: 25,
@@ -52,7 +52,7 @@ vi.mock('systeminformation', () => ({
     }),
     fsSize: vi.fn().mockResolvedValue([
       {
-        fs: '/',
+        fs: "/",
         size: 1000000000000,
         used: 500000000000,
         available: 500000000000,
@@ -60,22 +60,28 @@ vi.mock('systeminformation', () => ({
     ]),
     networkStats: vi.fn().mockResolvedValue([
       {
-        iface: 'eth0',
+        iface: "eth0",
         tx_sec: 1000,
         rx_sec: 2000,
       },
     ]),
     processes: vi.fn().mockResolvedValue({
       list: [
-        { pid: 1, name: 'init', cpu: 0, memRss: 10000, command: '/sbin/init' },
-        { pid: 100, name: 'chrome', cpu: 5, memRss: 500000, command: '/usr/bin/chrome' },
+        { pid: 1, name: "init", cpu: 0, memRss: 10000, command: "/sbin/init" },
+        {
+          pid: 100,
+          name: "chrome",
+          cpu: 5,
+          memRss: 500000,
+          command: "/usr/bin/chrome",
+        },
       ],
     }),
   },
 }));
 
 // Mock fs/promises
-vi.mock('fs/promises', () => ({
+vi.mock("fs/promises", () => ({
   readFile: vi.fn(),
   writeFile: vi.fn(),
   appendFile: vi.fn(),
@@ -91,7 +97,7 @@ vi.mock('fs/promises', () => ({
 }));
 
 // Mock child_process
-vi.mock('child_process', () => ({
+vi.mock("child_process", () => ({
   exec: vi.fn(),
   spawn: vi.fn(),
   execSync: vi.fn(),

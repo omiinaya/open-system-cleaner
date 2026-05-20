@@ -1,16 +1,16 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { app, shell, dialog } from 'electron';
-import * as os from 'os';
-import { CONSTANTS } from '../constants';
-import { formatBytes } from '../utils/formatters';
-import { auditLogger } from './auditLogger';
-import { sanitizeFilePath, isNonEmptyArray } from '../types/guards';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { app, shell, dialog } from "electron";
+import * as os from "os";
+import { CONSTANTS } from "../constants";
+import { formatBytes } from "../utils/formatters";
+import { auditLogger } from "./auditLogger";
+import { sanitizeFilePath, isNonEmptyArray } from "../types/guards";
 
 export interface JunkFile {
   path: string;
   size: number;
-  category: 'temp' | 'cache' | 'logs' | 'thumbnails' | 'recycle';
+  category: "temp" | "cache" | "logs" | "thumbnails" | "recycle";
   lastModified: Date;
 }
 
@@ -27,13 +27,13 @@ export class JunkFileScanner {
   private async safeOperation<T>(
     operation: () => Promise<T>,
     context: string,
-    defaultValue: T
+    defaultValue: T,
   ): Promise<T> {
     try {
       return await operation();
     } catch (error) {
       console.error(`[${context}] Operation failed:`, error);
-      await auditLogger.log('operation_failed', 'junkFileScanner', 'failure', {
+      await auditLogger.log("operation_failed", "junkFileScanner", "failure", {
         context,
         error: String(error),
       });
@@ -52,8 +52,8 @@ export class JunkFileScanner {
 
     // Check if in system directory
     const normalizedPath = filePath.toLowerCase();
-    return CONSTANTS.SYSTEM_DIRECTORIES.some(dir =>
-      normalizedPath.includes(dir.toLowerCase())
+    return CONSTANTS.SYSTEM_DIRECTORIES.some((dir) =>
+      normalizedPath.includes(dir.toLowerCase()),
     );
   }
 
@@ -62,102 +62,175 @@ export class JunkFileScanner {
    */
   async confirmDelete(
     filePaths: string[],
-    totalSize: number
-  ): Promise<'cancel' | 'trash' | 'delete'> {
+    totalSize: number,
+  ): Promise<"cancel" | "trash" | "delete"> {
     try {
       if (!dialog) {
         // In test environments without Electron, default to cancel
-        return 'cancel';
+        return "cancel";
       }
       const { response } = await dialog.showMessageBox({
-        type: 'warning',
-        buttons: ['Cancel', 'Move to Trash', 'Delete Permanently'],
+        type: "warning",
+        buttons: ["Cancel", "Move to Trash", "Delete Permanently"],
         defaultId: 0,
-        title: 'Confirm Deletion',
+        title: "Confirm Deletion",
         message: `Delete ${filePaths.length} junk files?`,
         detail: `This will free up ${formatBytes(totalSize)} of space.`,
-        checkboxLabel: 'Do not ask again for this session',
+        checkboxLabel: "Do not ask again for this session",
       });
 
-      const actions: ('cancel' | 'trash' | 'delete')[] = ['cancel', 'trash', 'delete'];
-      return actions[response] || 'cancel';
+      const actions: ("cancel" | "trash" | "delete")[] = [
+        "cancel",
+        "trash",
+        "delete",
+      ];
+      return actions[response] || "cancel";
     } catch {
       // If dialog fails, default to cancel for safety
-      return 'cancel';
+      return "cancel";
     }
   }
 
   private junkPatterns = [
     // Temp files
-    { pattern: path.join(os.tmpdir(), '*'), category: 'temp' as const },
-    { pattern: path.join(os.tmpdir(), '**', '*'), category: 'temp' as const },
-    { pattern: path.join(os.homedir(), 'AppData', 'Local', 'Temp', '*'), category: 'temp' as const },
-    
+    { pattern: path.join(os.tmpdir(), "*"), category: "temp" as const },
+    { pattern: path.join(os.tmpdir(), "**", "*"), category: "temp" as const },
+    {
+      pattern: path.join(os.homedir(), "AppData", "Local", "Temp", "*"),
+      category: "temp" as const,
+    },
+
     // Browser cache
-    { pattern: path.join(os.homedir(), 'AppData', 'Local', 'Google', 'Chrome', 'User Data', '**', 'Cache', '*'), category: 'cache' as const },
-    { pattern: path.join(os.homedir(), 'AppData', 'Local', 'Microsoft', 'Edge', 'User Data', '**', 'Cache', '*'), category: 'cache' as const },
-    { pattern: path.join(os.homedir(), '.cache', '**', '*'), category: 'cache' as const },
-    
+    {
+      pattern: path.join(
+        os.homedir(),
+        "AppData",
+        "Local",
+        "Google",
+        "Chrome",
+        "User Data",
+        "**",
+        "Cache",
+        "*",
+      ),
+      category: "cache" as const,
+    },
+    {
+      pattern: path.join(
+        os.homedir(),
+        "AppData",
+        "Local",
+        "Microsoft",
+        "Edge",
+        "User Data",
+        "**",
+        "Cache",
+        "*",
+      ),
+      category: "cache" as const,
+    },
+    {
+      pattern: path.join(os.homedir(), ".cache", "**", "*"),
+      category: "cache" as const,
+    },
+
     // Logs
-    { pattern: path.join(os.homedir(), 'AppData', 'Local', '*', 'logs', '*'), category: 'logs' as const },
-    { pattern: path.join(os.homedir(), '.var', 'log', '**', '*'), category: 'logs' as const },
-    
+    {
+      pattern: path.join(os.homedir(), "AppData", "Local", "*", "logs", "*"),
+      category: "logs" as const,
+    },
+    {
+      pattern: path.join(os.homedir(), ".var", "log", "**", "*"),
+      category: "logs" as const,
+    },
+
     // Thumbnails
-    { pattern: path.join(os.homedir(), 'AppData', 'Local', 'Microsoft', 'Windows', 'Explorer', 'ThumbCache_*.db'), category: 'thumbnails' as const },
-    { pattern: path.join(os.homedir(), '.thumbnails', '**', '*'), category: 'thumbnails' as const },
+    {
+      pattern: path.join(
+        os.homedir(),
+        "AppData",
+        "Local",
+        "Microsoft",
+        "Windows",
+        "Explorer",
+        "ThumbCache_*.db",
+      ),
+      category: "thumbnails" as const,
+    },
+    {
+      pattern: path.join(os.homedir(), ".thumbnails", "**", "*"),
+      category: "thumbnails" as const,
+    },
   ];
 
   private excludedPaths = [
-    'System32',
-    'SysWOW64',
-    'Windows',
-    'ProgramData',
-    path.join(os.homedir(), 'Documents'),
-    path.join(os.homedir(), 'Desktop'),
+    "System32",
+    "SysWOW64",
+    "Windows",
+    "ProgramData",
+    path.join(os.homedir(), "Documents"),
+    path.join(os.homedir(), "Desktop"),
   ];
 
   /**
    * Scan for junk files with progress tracking and error recovery
    */
-  async scan(onProgress?: (progress: number, currentFile: string) => void): Promise<ScanResult> {
-    return await this.safeOperation(async () => {
-      const files: JunkFile[] = [];
-      let totalSize = 0;
-      const categoryBreakdown: Record<string, number> = {};
-      let processedCount = 0;
+  async scan(
+    onProgress?: (progress: number, currentFile: string) => void,
+  ): Promise<ScanResult> {
+    return await this.safeOperation(
+      async () => {
+        const files: JunkFile[] = [];
+        let totalSize = 0;
+        const categoryBreakdown: Record<string, number> = {};
+        let processedCount = 0;
 
-      await auditLogger.log('scan_started', 'junkFileScanner', 'success', {
-        patternsCount: this.junkPatterns.length,
-      });
+        await auditLogger.log("scan_started", "junkFileScanner", "success", {
+          patternsCount: this.junkPatterns.length,
+        });
 
-      for (const { pattern, category } of this.junkPatterns) {
-        const dirPath = pattern.replace(/\*$/, '').replace(/\*\*\/\*$/, '');
-        const filesInDir = await this.scanDirectory(dirPath, category, pattern.includes('**'));
-        
-        for (const file of filesInDir) {
-          files.push(file);
-          totalSize += file.size;
-          categoryBreakdown[category] = (categoryBreakdown[category] || 0) + file.size;
+        for (const { pattern, category } of this.junkPatterns) {
+          const dirPath = pattern.replace(/\*$/, "").replace(/\*\*\/\*$/, "");
+          const filesInDir = await this.scanDirectory(
+            dirPath,
+            category,
+            pattern.includes("**"),
+          );
+
+          for (const file of filesInDir) {
+            files.push(file);
+            totalSize += file.size;
+            categoryBreakdown[category] =
+              (categoryBreakdown[category] || 0) + file.size;
+          }
+
+          processedCount++;
+          if (onProgress) {
+            const progress = Math.round(
+              (processedCount / this.junkPatterns.length) * 100,
+            );
+            onProgress(progress, `Scanning ${category}...`);
+          }
         }
-        
-        processedCount++;
-        if (onProgress) {
-          const progress = Math.round((processedCount / this.junkPatterns.length) * 100);
-          onProgress(progress, `Scanning ${category}...`);
-        }
-      }
 
-      await auditLogger.log('scan_completed', 'junkFileScanner', 'success', {
-        filesFound: files.length,
-        totalSize,
-        categories: Object.keys(categoryBreakdown),
-      });
+        await auditLogger.log("scan_completed", "junkFileScanner", "success", {
+          filesFound: files.length,
+          totalSize,
+          categories: Object.keys(categoryBreakdown),
+        });
 
-      return { files, totalSize, categoryBreakdown };
-    }, 'junkFileScanner.scan', { files: [], totalSize: 0, categoryBreakdown: {} });
+        return { files, totalSize, categoryBreakdown };
+      },
+      "junkFileScanner.scan",
+      { files: [], totalSize: 0, categoryBreakdown: {} },
+    );
   }
 
-  private async scanDirectory(dirPath: string, category: JunkFile['category'], recursive: boolean): Promise<JunkFile[]> {
+  private async scanDirectory(
+    dirPath: string,
+    category: JunkFile["category"],
+    recursive: boolean,
+  ): Promise<JunkFile[]> {
     const files: JunkFile[] = [];
 
     try {
@@ -167,17 +240,23 @@ export class JunkFileScanner {
         const fullPath = path.join(dirPath, entry.name);
 
         // Skip excluded paths
-        if (this.excludedPaths.some(excluded => fullPath.includes(excluded))) {
+        if (
+          this.excludedPaths.some((excluded) => fullPath.includes(excluded))
+        ) {
           continue;
         }
 
         if (entry.isDirectory() && recursive) {
-          const subFiles = await this.scanDirectory(fullPath, category, recursive);
+          const subFiles = await this.scanDirectory(
+            fullPath,
+            category,
+            recursive,
+          );
           files.push(...subFiles);
         } else if (entry.isFile()) {
           try {
             const stats = await fs.stat(fullPath);
-            
+
             // Only include files older than 24 hours
             const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
             if (stats.mtimeMs < oneDayAgo) {
@@ -206,21 +285,25 @@ export class JunkFileScanner {
    */
   async cleanFiles(
     filePaths: string[],
-    options: { useTrash?: boolean; skipConfirmation?: boolean } = {}
+    options: { useTrash?: boolean; skipConfirmation?: boolean } = {},
   ): Promise<{ success: boolean; freedSpace: number; errors: string[] }> {
     const { useTrash = true, skipConfirmation = false } = options;
     const errors: string[] = [];
 
     // Validate input
     if (!isNonEmptyArray<string>(filePaths)) {
-      return { success: false, freedSpace: 0, errors: ['Invalid input: filePaths must be a non-empty array'] };
+      return {
+        success: false,
+        freedSpace: 0,
+        errors: ["Invalid input: filePaths must be a non-empty array"],
+      };
     }
 
     // Sanitize paths
-    const sanitizedPaths = filePaths.map(p => sanitizeFilePath(p));
+    const sanitizedPaths = filePaths.map((p) => sanitizeFilePath(p));
 
     // Filter protected files
-    const safePaths = sanitizedPaths.filter(p => {
+    const safePaths = sanitizedPaths.filter((p) => {
       if (this.shouldProtectFile(p)) {
         errors.push(`Protected file skipped: ${p}`);
         return false;
@@ -229,7 +312,11 @@ export class JunkFileScanner {
     });
 
     if (safePaths.length === 0) {
-      return { success: false, freedSpace: 0, errors: ['No safe files to delete'] };
+      return {
+        success: false,
+        freedSpace: 0,
+        errors: ["No safe files to delete"],
+      };
     }
 
     // Calculate total size
@@ -246,11 +333,11 @@ export class JunkFileScanner {
     // Show confirmation if not skipped
     if (!skipConfirmation) {
       const action = await this.confirmDelete(safePaths, totalSize);
-      if (action === 'cancel') {
-        return { success: false, freedSpace: 0, errors: ['User cancelled'] };
+      if (action === "cancel") {
+        return { success: false, freedSpace: 0, errors: ["User cancelled"] };
       }
       // Update useTrash based on user choice
-      const shouldUseTrash = action === 'trash';
+      const shouldUseTrash = action === "trash";
     }
 
     // Perform deletion
@@ -271,7 +358,7 @@ export class JunkFileScanner {
 
         freedSpace += stats.size;
 
-        await auditLogger.log('file_deleted', 'junkFileScanner', 'success', {
+        await auditLogger.log("file_deleted", "junkFileScanner", "success", {
           filePath,
           size: stats.size,
           useTrash,
@@ -282,21 +369,30 @@ export class JunkFileScanner {
         errors.push(errorMsg);
         success = false;
 
-        await auditLogger.log('file_delete_failed', 'junkFileScanner', 'failure', {
-          filePath,
-          error: String(error),
-        });
+        await auditLogger.log(
+          "file_delete_failed",
+          "junkFileScanner",
+          "failure",
+          {
+            filePath,
+            error: String(error),
+          },
+        );
       }
     }
 
     return { success: success && errors.length === 0, freedSpace, errors };
   }
 
-  async cleanByCategory(category: JunkFile['category']): Promise<{ success: boolean; freedSpace: number }> {
+  async cleanByCategory(
+    category: JunkFile["category"],
+  ): Promise<{ success: boolean; freedSpace: number }> {
     const scanResult = await this.scan();
-    const filesToClean = scanResult.files.filter(f => f.category === category);
-    
-    return await this.cleanFiles(filesToClean.map(f => f.path));
+    const filesToClean = scanResult.files.filter(
+      (f) => f.category === category,
+    );
+
+    return await this.cleanFiles(filesToClean.map((f) => f.path));
   }
 }
 

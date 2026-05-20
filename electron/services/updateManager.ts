@@ -1,7 +1,7 @@
-import { autoUpdater, UpdateInfo } from 'electron-updater';
-import { dialog, ipcMain, app } from 'electron';
-import log from 'electron-log';
-import { auditLogger } from './auditLogger';
+import { autoUpdater, UpdateInfo } from "electron-updater";
+import { dialog, ipcMain, app } from "electron";
+import log from "electron-log";
+import { auditLogger } from "./auditLogger";
 
 export interface UpdateProgress {
   percent: number;
@@ -28,7 +28,7 @@ export class UpdateManager {
    */
   private setupAutoUpdater(): void {
     // Configure logging
-    log.transports.file.level = 'info';
+    log.transports.file.level = "info";
     autoUpdater.logger = log;
 
     // Configure auto-updater
@@ -37,31 +37,38 @@ export class UpdateManager {
     autoUpdater.allowPrerelease = this.allowPrerelease;
 
     // Event handlers
-    autoUpdater.on('checking-for-update', () => {
-      log.info('Checking for update...');
+    autoUpdater.on("checking-for-update", () => {
+      log.info("Checking for update...");
       this.lastCheck = new Date();
     });
 
-    autoUpdater.on('update-available', async (info: UpdateInfo) => {
-      log.info('Update available:', info);
+    autoUpdater.on("update-available", async (info: UpdateInfo) => {
+      log.info("Update available:", info);
       this.updateAvailable = true;
 
-      await auditLogger.log('update_available', 'updateManager', 'success', {
+      await auditLogger.log("update_available", "updateManager", "success", {
         version: info.version,
         releaseDate: info.releaseDate,
       });
 
       // Notify renderer process
-      this.notifyRenderer('update-available', info);
+      this.notifyRenderer("update-available", info);
 
       // Show notification to user
       if (!this.autoDownload) {
         const response = await dialog.showMessageBox({
-          type: 'info',
-          title: 'Update Available',
+          type: "info",
+          title: "Update Available",
           message: `A new version (${info.version}) is available.`,
-          detail: typeof info.releaseNotes === 'string' ? info.releaseNotes : 'Update now to get the latest features and improvements.',
-          buttons: ['Download & Install', 'Remind Me Later', 'Skip This Version'],
+          detail:
+            typeof info.releaseNotes === "string"
+              ? info.releaseNotes
+              : "Update now to get the latest features and improvements.",
+          buttons: [
+            "Download & Install",
+            "Remind Me Later",
+            "Skip This Version",
+          ],
           defaultId: 0,
           cancelId: 1,
         });
@@ -72,50 +79,50 @@ export class UpdateManager {
       }
     });
 
-    autoUpdater.on('update-not-available', (info: UpdateInfo) => {
-      log.info('Update not available:', info);
+    autoUpdater.on("update-not-available", (info: UpdateInfo) => {
+      log.info("Update not available:", info);
 
-      auditLogger.log('update_not_available', 'updateManager', 'success', {
+      auditLogger.log("update_not_available", "updateManager", "success", {
         currentVersion: app.getVersion(),
       });
     });
 
-    autoUpdater.on('error', async (err: Error) => {
-      log.error('Error in auto-updater:', err);
+    autoUpdater.on("error", async (err: Error) => {
+      log.error("Error in auto-updater:", err);
 
-      await auditLogger.log('update_error', 'updateManager', 'failure', {
+      await auditLogger.log("update_error", "updateManager", "failure", {
         error: err.message,
       });
 
-      this.notifyRenderer('update-error', { error: err.message });
+      this.notifyRenderer("update-error", { error: err.message });
     });
 
-    autoUpdater.on('download-progress', (progressObj: UpdateProgress) => {
+    autoUpdater.on("download-progress", (progressObj: UpdateProgress) => {
       const logMessage = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`;
       log.info(logMessage);
 
       // Notify renderer of progress
-      this.notifyRenderer('download-progress', progressObj);
+      this.notifyRenderer("download-progress", progressObj);
     });
 
-    autoUpdater.on('update-downloaded', async (info: UpdateInfo) => {
-      log.info('Update downloaded:', info);
+    autoUpdater.on("update-downloaded", async (info: UpdateInfo) => {
+      log.info("Update downloaded:", info);
       this.updateDownloaded = true;
 
-      await auditLogger.log('update_downloaded', 'updateManager', 'success', {
+      await auditLogger.log("update_downloaded", "updateManager", "success", {
         version: info.version,
       });
 
       // Notify renderer
-      this.notifyRenderer('update-downloaded', info);
+      this.notifyRenderer("update-downloaded", info);
 
       // Ask user to install
       const response = await dialog.showMessageBox({
-        type: 'info',
-        title: 'Update Ready',
+        type: "info",
+        title: "Update Ready",
         message: `Update to version ${info.version} has been downloaded.`,
-        detail: 'The application will restart to apply the update.',
-        buttons: ['Restart Now', 'Later'],
+        detail: "The application will restart to apply the update.",
+        buttons: ["Restart Now", "Later"],
         defaultId: 0,
         cancelId: 1,
       });
@@ -138,13 +145,13 @@ export class UpdateManager {
       }
 
       const result = await autoUpdater.checkForUpdates();
-      
+
       return {
         available: result?.updateInfo ? true : false,
         info: result?.updateInfo,
       };
     } catch (error) {
-      log.error('Error checking for updates:', error);
+      log.error("Error checking for updates:", error);
       return { available: false };
     }
   }
@@ -157,7 +164,7 @@ export class UpdateManager {
       await autoUpdater.downloadUpdate();
       return true;
     } catch (error) {
-      log.error('Error downloading update:', error);
+      log.error("Error downloading update:", error);
       return false;
     }
   }
@@ -227,24 +234,24 @@ export class UpdateManager {
    * Setup IPC handlers for update management
    */
   setupIpcHandlers(): void {
-    ipcMain.handle('update:check', async () => {
+    ipcMain.handle("update:check", async () => {
       return await this.checkForUpdates();
     });
 
-    ipcMain.handle('update:download', async () => {
+    ipcMain.handle("update:download", async () => {
       return await this.downloadUpdate();
     });
 
-    ipcMain.handle('update:install', () => {
+    ipcMain.handle("update:install", () => {
       this.quitAndInstall();
       return true;
     });
 
-    ipcMain.handle('update:getStatus', () => {
+    ipcMain.handle("update:getStatus", () => {
       return this.getStatus();
     });
 
-    ipcMain.handle('update:configure', (_event, settings) => {
+    ipcMain.handle("update:configure", (_event, settings) => {
       this.configure(settings);
       return true;
     });
@@ -258,9 +265,12 @@ export class UpdateManager {
     this.checkForUpdates();
 
     // Then check periodically
-    setInterval(() => {
-      this.checkForUpdates();
-    }, intervalHours * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.checkForUpdates();
+      },
+      intervalHours * 60 * 60 * 1000,
+    );
   }
 }
 

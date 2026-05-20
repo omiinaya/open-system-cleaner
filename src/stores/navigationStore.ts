@@ -1,62 +1,62 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { ModuleType, ModuleConfig, NavigationItem } from '../types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { ModuleType, ModuleConfig, NavigationItem } from "../types";
 
 // Module configurations
 export const moduleConfigs: Record<ModuleType, ModuleConfig> = {
   dashboard: {
-    id: 'dashboard',
-    name: 'Overview',
-    description: 'System health overview and quick actions',
-    icon: 'LayoutDashboard',
+    id: "dashboard",
+    name: "Overview",
+    description: "System health overview and quick actions",
+    icon: "LayoutDashboard",
     isEnabled: true,
     requiresAdmin: false,
   },
   clean: {
-    id: 'clean',
-    name: 'Clean',
-    description: 'Remove junk files and clean registry',
-    icon: 'Sparkles',
+    id: "clean",
+    name: "Clean",
+    description: "Remove junk files and clean registry",
+    icon: "Sparkles",
     isEnabled: true,
     requiresAdmin: true,
   },
   optimize: {
-    id: 'optimize',
-    name: 'Optimize',
-    description: 'Optimize startup, RAM, and internet',
-    icon: 'Zap',
+    id: "optimize",
+    name: "Optimize",
+    description: "Optimize startup, RAM, and internet",
+    icon: "Zap",
     isEnabled: true,
     requiresAdmin: false,
   },
   protect: {
-    id: 'protect',
-    name: 'Protect',
-    description: 'Security and privacy protection',
-    icon: 'Shield',
+    id: "protect",
+    name: "Protect",
+    description: "Security and privacy protection",
+    icon: "Shield",
     isEnabled: true,
     requiresAdmin: true,
   },
   speedup: {
-    id: 'speedup',
-    name: 'Speed Up',
-    description: 'Boost performance and gaming',
-    icon: 'Gauge',
+    id: "speedup",
+    name: "Speed Up",
+    description: "Boost performance and gaming",
+    icon: "Gauge",
     isEnabled: true,
     requiresAdmin: false,
   },
   toolbox: {
-    id: 'toolbox',
-    name: 'Toolbox',
-    description: 'Additional system utilities',
-    icon: 'Wrench',
+    id: "toolbox",
+    name: "Toolbox",
+    description: "Additional system utilities",
+    icon: "Wrench",
     isEnabled: true,
     requiresAdmin: false,
   },
   settings: {
-    id: 'settings',
-    name: 'Settings',
-    description: 'Application settings',
-    icon: 'Settings',
+    id: "settings",
+    name: "Settings",
+    description: "Application settings",
+    icon: "Settings",
     isEnabled: true,
     requiresAdmin: false,
   },
@@ -75,35 +75,41 @@ interface NavigationState {
   currentModule: ModuleType;
   previousModule: ModuleType | null;
   navigationHistory: NavigationHistoryEntry[];
-  
+
   // Module states
   activeModules: ModuleType[];
   moduleConfigs: Record<ModuleType, ModuleConfig>;
-  
+
   // UI state
   sidebarCollapsed: boolean;
-  
+
   // Actions
-  setCurrentModule: (module: ModuleType, params?: Record<string, unknown>) => void;
+  setCurrentModule: (
+    module: ModuleType,
+    params?: Record<string, unknown>,
+  ) => void;
   goBack: () => void;
   goToPreviousModule: () => void;
   canGoBack: () => boolean;
-  
+
   // Module management
   enableModule: (module: ModuleType) => void;
   disableModule: (module: ModuleType) => void;
   toggleModule: (module: ModuleType) => void;
   isModuleEnabled: (module: ModuleType) => boolean;
   isModuleActive: (module: ModuleType) => boolean;
-  
+
   // Sidebar
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
-  
+
   // History management
   clearHistory: () => void;
   getLastVisitedModule: () => ModuleType | null;
-  getNavigationStats: () => { totalVisits: number; mostVisited: ModuleType | null };
+  getNavigationStats: () => {
+    totalVisits: number;
+    mostVisited: ModuleType | null;
+  };
 }
 
 // Maximum history entries to keep
@@ -113,10 +119,18 @@ export const useNavigationStore = create<NavigationState>()(
   persist(
     (set, get) => ({
       // Initial state
-      currentModule: 'dashboard',
+      currentModule: "dashboard",
       previousModule: null,
       navigationHistory: [],
-      activeModules: ['dashboard', 'clean', 'optimize', 'protect', 'speedup', 'toolbox', 'settings'],
+      activeModules: [
+        "dashboard",
+        "clean",
+        "optimize",
+        "protect",
+        "speedup",
+        "toolbox",
+        "settings",
+      ],
       moduleConfigs: { ...moduleConfigs },
       sidebarCollapsed: false,
 
@@ -124,7 +138,7 @@ export const useNavigationStore = create<NavigationState>()(
       setCurrentModule: (module, params) => {
         const state = get();
         const timestamp = Date.now();
-        
+
         // Don't navigate if module is disabled
         if (!state.moduleConfigs[module]?.isEnabled) {
           console.warn(`Module ${module} is disabled`);
@@ -145,7 +159,7 @@ export const useNavigationStore = create<NavigationState>()(
       goBack: () => {
         const state = get();
         const history = state.navigationHistory;
-        
+
         if (history.length > 1) {
           const previousEntry = history[1];
           set({
@@ -159,7 +173,10 @@ export const useNavigationStore = create<NavigationState>()(
       // Go to previous module (shortcut)
       goToPreviousModule: () => {
         const state = get();
-        if (state.previousModule && state.moduleConfigs[state.previousModule]?.isEnabled) {
+        if (
+          state.previousModule &&
+          state.moduleConfigs[state.previousModule]?.isEnabled
+        ) {
           get().setCurrentModule(state.previousModule);
         }
       },
@@ -185,8 +202,8 @@ export const useNavigationStore = create<NavigationState>()(
       // Disable a module
       disableModule: (module) => {
         // Don't disable dashboard
-        if (module === 'dashboard') return;
-        
+        if (module === "dashboard") return;
+
         set((state) => ({
           moduleConfigs: {
             ...state.moduleConfigs,
@@ -200,7 +217,7 @@ export const useNavigationStore = create<NavigationState>()(
         // If current module is being disabled, go to dashboard
         const state = get();
         if (state.currentModule === module) {
-          get().setCurrentModule('dashboard');
+          get().setCurrentModule("dashboard");
         }
       },
 
@@ -243,7 +260,7 @@ export const useNavigationStore = create<NavigationState>()(
       getLastVisitedModule: () => {
         const history = get().navigationHistory;
         const current = get().currentModule;
-        
+
         for (const entry of history) {
           if (entry.module !== current) {
             return entry.module;
@@ -256,21 +273,21 @@ export const useNavigationStore = create<NavigationState>()(
       getNavigationStats: () => {
         const history = get().navigationHistory;
         const moduleVisits: Record<string, number> = {};
-        
+
         history.forEach((entry) => {
           moduleVisits[entry.module] = (moduleVisits[entry.module] || 0) + 1;
         });
-        
+
         let mostVisited: ModuleType | null = null;
         let maxVisits = 0;
-        
+
         Object.entries(moduleVisits).forEach(([module, visits]) => {
           if (visits > maxVisits) {
             maxVisits = visits;
             mostVisited = module as ModuleType;
           }
         });
-        
+
         return {
           totalVisits: history.length,
           mostVisited,
@@ -278,15 +295,15 @@ export const useNavigationStore = create<NavigationState>()(
       },
     }),
     {
-      name: 'navigation-storage',
+      name: "navigation-storage",
       partialize: (state) => ({
         currentModule: state.currentModule,
         moduleConfigs: state.moduleConfigs,
         sidebarCollapsed: state.sidebarCollapsed,
         navigationHistory: state.navigationHistory.slice(0, 20), // Keep only recent history
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Hook for getting current module config

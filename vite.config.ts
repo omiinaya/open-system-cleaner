@@ -1,12 +1,12 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { resolve } from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: "./",
   build: {
-    outDir: 'dist/renderer',
+    outDir: "dist/renderer",
     emptyOutDir: true,
   },
   server: {
@@ -15,13 +15,13 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@components': resolve(__dirname, 'src/components'),
-      '@hooks': resolve(__dirname, 'src/hooks'),
-      '@stores': resolve(__dirname, 'src/stores'),
-      '@types': resolve(__dirname, 'src/types'),
-      '@utils': resolve(__dirname, 'src/utils'),
-      '@styles': resolve(__dirname, 'src/styles'),
+      "@": resolve(__dirname, "src"),
+      "@components": resolve(__dirname, "src/components"),
+      "@hooks": resolve(__dirname, "src/hooks"),
+      "@stores": resolve(__dirname, "src/stores"),
+      "@types": resolve(__dirname, "src/types"),
+      "@utils": resolve(__dirname, "src/utils"),
+      "@styles": resolve(__dirname, "src/styles"),
     },
   },
 });

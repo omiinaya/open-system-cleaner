@@ -1,7 +1,7 @@
-import React from 'react';
-import { cn } from '../../utils/cn';
-import { useThemeStore } from '../../stores/themeStore';
-import { Sun, Moon, Minus, Square, X } from 'lucide-react';
+import React from "react";
+import { cn } from "../../utils/cn";
+import { useThemeStore } from "../../stores/themeStore";
+import { Sun, Moon, Minus, Square, X } from "lucide-react";
 
 export interface HeaderProps {
   title: string;
@@ -17,19 +17,19 @@ const Header: React.FC<HeaderProps> = ({
   const { isDark, toggleTheme } = useThemeStore();
 
   const handleMinimize = () => {
-    if (typeof window !== 'undefined' && (window as any).electronAPI) {
+    if (typeof window !== "undefined" && (window as any).electronAPI) {
       (window as any).electronAPI.minimizeWindow();
     }
   };
 
   const handleMaximize = () => {
-    if (typeof window !== 'undefined' && (window as any).electronAPI) {
+    if (typeof window !== "undefined" && (window as any).electronAPI) {
       (window as any).electronAPI.maximizeWindow();
     }
   };
 
   const handleClose = () => {
-    if (typeof window !== 'undefined' && (window as any).electronAPI) {
+    if (typeof window !== "undefined" && (window as any).electronAPI) {
       (window as any).electronAPI.closeWindow();
     }
   };
@@ -37,8 +37,8 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header
       className={cn(
-        'h-16 bg-bg-primary border-b border-border flex items-center justify-between px-6',
-        className
+        "h-16 bg-bg-primary border-b border-border flex items-center justify-between px-6",
+        className,
       )}
     >
       {/* Left: Title */}
@@ -52,19 +52,15 @@ const Header: React.FC<HeaderProps> = ({
         <button
           onClick={toggleTheme}
           className={cn(
-            'p-2 rounded-lg transition-all duration-200',
-            'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary',
-            'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-            'dark:focus:ring-offset-bg-primary'
+            "p-2 rounded-lg transition-all duration-200",
+            "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
+            "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
+            "dark:focus:ring-offset-bg-primary",
           )}
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
-          {isDark ? (
-            <Sun className="w-5 h-5" />
-          ) : (
-            <Moon className="w-5 h-5" />
-          )}
+          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
 
         {/* Window Controls (Electron) */}
@@ -73,8 +69,8 @@ const Header: React.FC<HeaderProps> = ({
             <button
               onClick={handleMinimize}
               className={cn(
-                'p-2 rounded-lg transition-all duration-200',
-                'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+                "p-2 rounded-lg transition-all duration-200",
+                "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
               )}
               title="Minimize"
               aria-label="Minimize window"
@@ -84,8 +80,8 @@ const Header: React.FC<HeaderProps> = ({
             <button
               onClick={handleMaximize}
               className={cn(
-                'p-2 rounded-lg transition-all duration-200',
-                'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+                "p-2 rounded-lg transition-all duration-200",
+                "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
               )}
               title="Maximize"
               aria-label="Maximize window"
@@ -95,8 +91,8 @@ const Header: React.FC<HeaderProps> = ({
             <button
               onClick={handleClose}
               className={cn(
-                'p-2 rounded-lg transition-all duration-200',
-                'text-text-secondary hover:text-white hover:bg-danger-500'
+                "p-2 rounded-lg transition-all duration-200",
+                "text-text-secondary hover:text-white hover:bg-danger-500",
               )}
               title="Close"
               aria-label="Close window"

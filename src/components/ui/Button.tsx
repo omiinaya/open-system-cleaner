@@ -1,6 +1,6 @@
-import React from 'react';
-import { cn } from '../../utils/cn';
-import type { ButtonVariant, ButtonSize } from '../../types';
+import React from "react";
+import { cn } from "../../utils/cn";
+import type { ButtonVariant, ButtonSize } from "../../types";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -15,8 +15,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
-      variant = 'primary',
-      size = 'md',
+      variant = "primary",
+      size = "md",
       loading = false,
       fullWidth = false,
       leftIcon,
@@ -25,30 +25,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       ...props
     },
-    ref
+    ref,
   ) => {
     const baseClasses =
-      'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
+      "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
     const variantClasses = {
       primary:
-        'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500 shadow-sm hover:shadow-md',
+        "bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500 shadow-sm hover:shadow-md",
       secondary:
-        'bg-bg-tertiary text-text-primary border border-border hover:bg-border hover:border-border-hover focus:ring-text-secondary',
+        "bg-bg-tertiary text-text-primary border border-border hover:bg-border hover:border-border-hover focus:ring-text-secondary",
       success:
-        'bg-success-500 text-white hover:bg-success-600 focus:ring-success-500 shadow-sm hover:shadow-md',
+        "bg-success-500 text-white hover:bg-success-600 focus:ring-success-500 shadow-sm hover:shadow-md",
       warning:
-        'bg-warning-500 text-white hover:bg-warning-600 focus:ring-warning-500 shadow-sm hover:shadow-md',
+        "bg-warning-500 text-white hover:bg-warning-600 focus:ring-warning-500 shadow-sm hover:shadow-md",
       danger:
-        'bg-danger-500 text-white hover:bg-danger-600 focus:ring-danger-500 shadow-sm hover:shadow-md',
+        "bg-danger-500 text-white hover:bg-danger-600 focus:ring-danger-500 shadow-sm hover:shadow-md",
       ghost:
-        'bg-transparent text-text-secondary hover:bg-bg-tertiary hover:text-text-primary focus:ring-text-secondary',
+        "bg-transparent text-text-secondary hover:bg-bg-tertiary hover:text-text-primary focus:ring-text-secondary",
     };
 
     const sizeClasses = {
-      sm: 'px-3 py-1.5 text-sm rounded-md gap-1.5',
-      md: 'px-4 py-2 text-sm rounded-lg gap-2',
-      lg: 'px-6 py-3 text-base rounded-lg gap-2',
+      sm: "px-3 py-1.5 text-sm rounded-md gap-1.5",
+      md: "px-4 py-2 text-sm rounded-lg gap-2",
+      lg: "px-6 py-3 text-base rounded-lg gap-2",
     };
 
     const loadingSpinner = (
@@ -81,8 +81,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           baseClasses,
           variantClasses[variant],
           sizeClasses[size],
-          fullWidth && 'w-full',
-          className
+          fullWidth && "w-full",
+          className,
         )}
         disabled={disabled || loading}
         {...props}
@@ -101,9 +101,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
       </button>
     );
-  }
+  },
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
 export default Button;

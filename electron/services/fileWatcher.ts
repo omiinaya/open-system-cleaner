@@ -1,9 +1,9 @@
-import { watch, FSWatcher } from 'chokidar';
-import * as path from 'path';
-import { auditLogger } from './auditLogger';
+import { watch, FSWatcher } from "chokidar";
+import * as path from "path";
+import { auditLogger } from "./auditLogger";
 
 export interface FileWatchEvent {
-  type: 'add' | 'change' | 'unlink' | 'addDir' | 'unlinkDir';
+  type: "add" | "change" | "unlink" | "addDir" | "unlinkDir";
   path: string;
   stats?: any;
   timestamp: number;
@@ -32,7 +32,10 @@ export class FileWatcherService {
     /^\.[a-z0-9]{8}$/, // Random 8-char extension
   ];
 
-  private ransomwareCallbacks: ((indicators: RansomwareIndicators, events: FileWatchEvent[]) => void)[] = [];
+  private ransomwareCallbacks: ((
+    indicators: RansomwareIndicators,
+    events: FileWatchEvent[],
+  ) => void)[] = [];
   private isWatching = false;
 
   /**
@@ -44,10 +47,10 @@ export class FileWatcherService {
       ignored?: (string | RegExp)[];
       usePolling?: boolean;
       interval?: number;
-    } = {}
+    } = {},
   ): void {
     if (this.isWatching) {
-      console.warn('File watcher already running');
+      console.warn("File watcher already running");
       return;
     }
 
@@ -76,7 +79,7 @@ export class FileWatcherService {
     this.setupEventHandlers();
     this.isWatching = true;
 
-    auditLogger.log('file_watcher_started', 'fileWatcher', 'success', {
+    auditLogger.log("file_watcher_started", "fileWatcher", "success", {
       paths,
     });
   }
@@ -87,35 +90,35 @@ export class FileWatcherService {
   private setupEventHandlers(): void {
     if (!this.watcher) return;
 
-    this.watcher.on('add', (filePath, stats) => {
-      this.handleEvent('add', filePath, stats);
+    this.watcher.on("add", (filePath, stats) => {
+      this.handleEvent("add", filePath, stats);
     });
 
-    this.watcher.on('change', (filePath, stats) => {
-      this.handleEvent('change', filePath, stats);
+    this.watcher.on("change", (filePath, stats) => {
+      this.handleEvent("change", filePath, stats);
     });
 
-    this.watcher.on('unlink', (filePath) => {
-      this.handleEvent('unlink', filePath);
+    this.watcher.on("unlink", (filePath) => {
+      this.handleEvent("unlink", filePath);
     });
 
-    this.watcher.on('addDir', (dirPath) => {
-      this.handleEvent('addDir', dirPath);
+    this.watcher.on("addDir", (dirPath) => {
+      this.handleEvent("addDir", dirPath);
     });
 
-    this.watcher.on('unlinkDir', (dirPath) => {
-      this.handleEvent('unlinkDir', dirPath);
+    this.watcher.on("unlinkDir", (dirPath) => {
+      this.handleEvent("unlinkDir", dirPath);
     });
 
-    this.watcher.on('error', (error) => {
-      console.error('File watcher error:', error);
-      auditLogger.log('file_watcher_error', 'fileWatcher', 'failure', {
+    this.watcher.on("error", (error) => {
+      console.error("File watcher error:", error);
+      auditLogger.log("file_watcher_error", "fileWatcher", "failure", {
         error: String(error),
       });
     });
 
-    this.watcher.on('ready', () => {
-      console.log('File watcher ready');
+    this.watcher.on("ready", () => {
+      console.log("File watcher ready");
     });
   }
 
@@ -123,9 +126,9 @@ export class FileWatcherService {
    * Handle a file system event
    */
   private handleEvent(
-    type: FileWatchEvent['type'],
+    type: FileWatchEvent["type"],
     filePath: string,
-    stats?: any
+    stats?: any,
   ): void {
     const event: FileWatchEvent = {
       type,
@@ -154,8 +157,8 @@ export class FileWatcherService {
     const fileName = path.basename(event.path);
 
     // Check for suspicious file extensions
-    if (this.suspiciousPatterns.some(pattern => pattern.test(fileName))) {
-      auditLogger.log('suspicious_file_detected', 'fileWatcher', 'warning', {
+    if (this.suspiciousPatterns.some((pattern) => pattern.test(fileName))) {
+      auditLogger.log("suspicious_file_detected", "fileWatcher", "warning", {
         path: event.path,
         type: event.type,
         fileName,
@@ -163,16 +166,21 @@ export class FileWatcherService {
     }
 
     // Check for rapid file creation (possible file bomb)
-    if (event.type === 'add') {
+    if (event.type === "add") {
       const recentAdditions = this.recentEvents.filter(
-        e => e.type === 'add' && Date.now() - e.timestamp < 1000
+        (e) => e.type === "add" && Date.now() - e.timestamp < 1000,
       );
 
       if (recentAdditions.length > 50) {
-        auditLogger.log('rapid_file_creation_detected', 'fileWatcher', 'warning', {
-          count: recentAdditions.length,
-          timeframe: '1 second',
-        });
+        auditLogger.log(
+          "rapid_file_creation_detected",
+          "fileWatcher",
+          "warning",
+          {
+            count: recentAdditions.length,
+            timeframe: "1 second",
+          },
+        );
       }
     }
   }
@@ -185,7 +193,7 @@ export class FileWatcherService {
     const recentWindow = 5000; // 5 seconds
 
     const recentChanges = this.recentEvents.filter(
-      e => now - e.timestamp < recentWindow
+      (e) => now - e.timestamp < recentWindow,
     );
 
     const indicators: RansomwareIndicators = {
@@ -201,10 +209,10 @@ export class FileWatcherService {
     }
 
     // Check for suspicious extensions
-    const suspiciousFiles = recentChanges.filter(e =>
-      this.suspiciousPatterns.some(pattern =>
-        pattern.test(path.basename(e.path))
-      )
+    const suspiciousFiles = recentChanges.filter((e) =>
+      this.suspiciousPatterns.some((pattern) =>
+        pattern.test(path.basename(e.path)),
+      ),
     );
 
     if (suspiciousFiles.length > 0) {
@@ -212,7 +220,7 @@ export class FileWatcherService {
     }
 
     // Check for bulk operations (many files modified at once)
-    const modifiedFiles = recentChanges.filter(e => e.type === 'change');
+    const modifiedFiles = recentChanges.filter((e) => e.type === "change");
     if (modifiedFiles.length > 20) {
       indicators.bulkOperations = true;
     }
@@ -231,7 +239,10 @@ export class FileWatcherService {
    * Register a callback for ransomware detection
    */
   onRansomwareDetected(
-    callback: (indicators: RansomwareIndicators, events: FileWatchEvent[]) => void
+    callback: (
+      indicators: RansomwareIndicators,
+      events: FileWatchEvent[],
+    ) => void,
   ): () => void {
     this.ransomwareCallbacks.push(callback);
 
@@ -249,20 +260,25 @@ export class FileWatcherService {
    */
   private triggerRansomwareCallbacks(
     indicators: RansomwareIndicators,
-    events: FileWatchEvent[]
+    events: FileWatchEvent[],
   ): void {
     for (const callback of this.ransomwareCallbacks) {
       try {
         callback(indicators, events);
       } catch (error) {
-        console.error('Error in ransomware callback:', error);
+        console.error("Error in ransomware callback:", error);
       }
     }
 
-    auditLogger.log('ransomware_indicators_detected', 'fileWatcher', 'warning', {
-      indicators,
-      eventCount: events.length,
-    });
+    auditLogger.log(
+      "ransomware_indicators_detected",
+      "fileWatcher",
+      "warning",
+      {
+        indicators,
+        eventCount: events.length,
+      },
+    );
   }
 
   /**
@@ -275,7 +291,7 @@ export class FileWatcherService {
       this.isWatching = false;
       this.recentEvents = [];
 
-      auditLogger.log('file_watcher_stopped', 'fileWatcher', 'success', {});
+      auditLogger.log("file_watcher_stopped", "fileWatcher", "success", {});
     }
   }
 
@@ -303,7 +319,7 @@ export class FileWatcherService {
   } {
     const now = Date.now();
     const recentEvents = this.recentEvents.filter(
-      e => now - e.timestamp < 60000 // Last minute
+      (e) => now - e.timestamp < 60000, // Last minute
     );
 
     const eventsByType: Record<string, number> = {};

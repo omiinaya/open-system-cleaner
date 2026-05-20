@@ -23,54 +23,69 @@ export const CONSTANTS = {
 
   // Protected file extensions
   PROTECTED_EXTENSIONS: [
-    '.exe', '.dll', '.sys', '.drv', // System files
-    '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', // Office
-    '.pdf', '.pst', '.ost', // Email/Documents
-    '.db', '.sql', '.sqlite', // Databases
-    '.key', '.pem', '.p12', '.pfx', // Certificates
+    ".exe",
+    ".dll",
+    ".sys",
+    ".drv", // System files
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx", // Office
+    ".pdf",
+    ".pst",
+    ".ost", // Email/Documents
+    ".db",
+    ".sql",
+    ".sqlite", // Databases
+    ".key",
+    ".pem",
+    ".p12",
+    ".pfx", // Certificates
   ] as string[],
 
   // System directories to skip
   SYSTEM_DIRECTORIES: [
-    'System32',
-    'SysWOW64',
-    'Windows',
-    'ProgramData',
-    'node_modules',
-    '.git',
-    '$Recycle.Bin',
-    'Recovery',
+    "System32",
+    "SysWOW64",
+    "Windows",
+    "ProgramData",
+    "node_modules",
+    ".git",
+    "$Recycle.Bin",
+    "Recovery",
   ],
 
   // Process whitelist (never kill these)
   PROCESS_WHITELIST: [
-    'System',
-    'System Idle Process',
-    'explorer.exe',
-    'winlogon.exe',
-    'csrss.exe',
-    'smss.exe',
-    'services.exe',
-    'lsass.exe',
-    'svchost.exe',
-    'chrome.exe',
-    'firefox.exe',
-    'msedge.exe',
-    'code.exe',
+    "System",
+    "System Idle Process",
+    "explorer.exe",
+    "winlogon.exe",
+    "csrss.exe",
+    "smss.exe",
+    "services.exe",
+    "lsass.exe",
+    "svchost.exe",
+    "chrome.exe",
+    "firefox.exe",
+    "msedge.exe",
+    "code.exe",
   ],
 
   // Process blacklist (safe to kill)
   PROCESS_BLACKLIST: [
-    'notepad.exe',
-    'calc.exe',
-    'mspaint.exe',
-    'cmd.exe',
-    'powershell.exe',
-    'discord.exe',
-    'spotify.exe',
-    'steam.exe',
-    'slack.exe',
-    'teams.exe',
-    'zoom.exe',
+    "notepad.exe",
+    "calc.exe",
+    "mspaint.exe",
+    "cmd.exe",
+    "powershell.exe",
+    "discord.exe",
+    "spotify.exe",
+    "steam.exe",
+    "slack.exe",
+    "teams.exe",
+    "zoom.exe",
   ],
 } as const;

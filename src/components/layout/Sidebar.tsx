@@ -1,6 +1,6 @@
-import React from 'react';
-import { cn } from '../../utils/cn';
-import type { ModuleType } from '../../types';
+import React from "react";
+import { cn } from "../../utils/cn";
+import type { ModuleType } from "../../types";
 import {
   LayoutDashboard,
   Sparkles,
@@ -11,7 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
-} from 'lucide-react';
+} from "lucide-react";
 
 export interface SidebarProps {
   currentModule: ModuleType;
@@ -29,33 +29,33 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
   {
-    id: 'dashboard',
-    label: 'Overview',
+    id: "dashboard",
+    label: "Overview",
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
-    id: 'clean',
-    label: 'Clean',
+    id: "clean",
+    label: "Clean",
     icon: <Sparkles className="w-5 h-5" />,
   },
   {
-    id: 'optimize',
-    label: 'Optimize',
+    id: "optimize",
+    label: "Optimize",
     icon: <Zap className="w-5 h-5" />,
   },
   {
-    id: 'protect',
-    label: 'Protect',
+    id: "protect",
+    label: "Protect",
     icon: <Shield className="w-5 h-5" />,
   },
   {
-    id: 'speedup',
-    label: 'Speed Up',
+    id: "speedup",
+    label: "Speed Up",
     icon: <Gauge className="w-5 h-5" />,
   },
   {
-    id: 'toolbox',
-    label: 'Toolbox',
+    id: "toolbox",
+    label: "Toolbox",
     icon: <Wrench className="w-5 h-5" />,
   },
 ];
@@ -69,15 +69,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={cn(
-        'flex flex-col h-full bg-bg-secondary border-r border-border transition-all duration-300 ease-in-out',
-        collapsed ? 'w-[72px]' : 'w-[260px]'
+        "flex flex-col h-full bg-bg-secondary border-r border-border transition-all duration-300 ease-in-out",
+        collapsed ? "w-[72px]" : "w-[260px]",
       )}
     >
       {/* Logo/Header */}
       <div
         className={cn(
-          'flex items-center h-16 border-b border-border px-4',
-          collapsed ? 'justify-center' : 'justify-between'
+          "flex items-center h-16 border-b border-border px-4",
+          collapsed ? "justify-center" : "justify-between",
         )}
       >
         {!collapsed && (
@@ -108,20 +108,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   onClick={() => onModuleChange(item.id)}
                   className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group',
-                    'hover:bg-bg-tertiary',
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                    "hover:bg-bg-tertiary",
                     isActive
-                      ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? "bg-primary-500/10 text-primary-600 dark:text-primary-400"
+                      : "text-text-secondary hover:text-text-primary",
                   )}
                   title={collapsed ? item.label : undefined}
                 >
                   <span
                     className={cn(
-                      'flex-shrink-0 transition-colors duration-200',
+                      "flex-shrink-0 transition-colors duration-200",
                       isActive
-                        ? 'text-primary-500'
-                        : 'text-text-tertiary group-hover:text-text-secondary'
+                        ? "text-primary-500"
+                        : "text-text-tertiary group-hover:text-text-secondary",
                     )}
                   >
                     {item.icon}
@@ -150,40 +150,38 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="border-t border-border p-3 space-y-1">
         {/* Settings Button */}
         <button
-          onClick={() => onModuleChange('settings')}
+          onClick={() => onModuleChange("settings")}
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group',
-            'hover:bg-bg-tertiary',
-            currentModule === 'settings'
-              ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
-              : 'text-text-secondary hover:text-text-primary'
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+            "hover:bg-bg-tertiary",
+            currentModule === "settings"
+              ? "bg-primary-500/10 text-primary-600 dark:text-primary-400"
+              : "text-text-secondary hover:text-text-primary",
           )}
-          title={collapsed ? 'Settings' : undefined}
+          title={collapsed ? "Settings" : undefined}
         >
           <span
             className={cn(
-              'flex-shrink-0 transition-colors duration-200',
-              currentModule === 'settings'
-                ? 'text-primary-500'
-                : 'text-text-tertiary group-hover:text-text-secondary'
+              "flex-shrink-0 transition-colors duration-200",
+              currentModule === "settings"
+                ? "text-primary-500"
+                : "text-text-tertiary group-hover:text-text-secondary",
             )}
           >
             <Settings className="w-5 h-5" />
           </span>
-          {!collapsed && (
-            <span className="font-medium text-sm">Settings</span>
-          )}
+          {!collapsed && <span className="font-medium text-sm">Settings</span>}
         </button>
 
         {/* Collapse Toggle */}
         <button
           onClick={onToggleCollapse}
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
-            'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary',
-            collapsed ? 'justify-center' : ''
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+            "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
+            collapsed ? "justify-center" : "",
           )}
-          title={collapsed ? 'Expand' : 'Collapse'}
+          title={collapsed ? "Expand" : "Collapse"}
         >
           {collapsed ? (
             <ChevronRight className="w-5 h-5" />

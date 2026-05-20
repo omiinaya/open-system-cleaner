@@ -1,8 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { Readable } from 'stream';
-import { auditLogger } from './auditLogger';
-import { formatBytes } from '../utils/formatters';
+import * as fs from "fs";
+import * as path from "path";
+import { Readable } from "stream";
+import { auditLogger } from "./auditLogger";
+import { formatBytes } from "../utils/formatters";
 
 export interface FileInfo {
   path: string;
@@ -53,7 +53,7 @@ export class StreamingFileScanner {
   async *streamFiles(
     dirPath: string,
     options: StreamScanOptions = {},
-    currentDepth = 0
+    currentDepth = 0,
   ): AsyncGenerator<FileInfo, void, unknown> {
     const opts = { ...this.defaultOptions, ...options };
 
@@ -126,7 +126,7 @@ export class StreamingFileScanner {
    */
   async scanWithStream(
     paths: string[],
-    options: StreamScanOptions = {}
+    options: StreamScanOptions = {},
   ): Promise<{ files: FileInfo[]; stats: ScanStats }> {
     const startTime = Date.now();
     const files: FileInfo[] = [];
@@ -135,10 +135,15 @@ export class StreamingFileScanner {
     let totalSize = 0;
     let filesScanned = 0;
 
-    await auditLogger.log('stream_scan_started', 'streamingScanner', 'success', {
-      paths,
-      options,
-    });
+    await auditLogger.log(
+      "stream_scan_started",
+      "streamingScanner",
+      "success",
+      {
+        paths,
+        options,
+      },
+    );
 
     try {
       for (const scanPath of paths) {
@@ -159,7 +164,7 @@ export class StreamingFileScanner {
             await options.onFile?.(file);
           } catch (error) {
             errors++;
-            console.error('Error in file callback:', error);
+            console.error("Error in file callback:", error);
           }
 
           // If we have too many files in memory, we might want to flush them
@@ -182,18 +187,28 @@ export class StreamingFileScanner {
         duration,
       };
 
-      await auditLogger.log('stream_scan_completed', 'streamingScanner', 'success', {
-        filesScanned,
-        directoriesScanned,
-        totalSize,
-        duration,
-      });
+      await auditLogger.log(
+        "stream_scan_completed",
+        "streamingScanner",
+        "success",
+        {
+          filesScanned,
+          directoriesScanned,
+          totalSize,
+          duration,
+        },
+      );
 
       return { files, stats };
     } catch (error) {
-      await auditLogger.log('stream_scan_failed', 'streamingScanner', 'failure', {
-        error: String(error),
-      });
+      await auditLogger.log(
+        "stream_scan_failed",
+        "streamingScanner",
+        "failure",
+        {
+          error: String(error),
+        },
+      );
       throw error;
     }
   }
@@ -206,7 +221,7 @@ export class StreamingFileScanner {
     paths: string[],
     batchSize: number,
     processor: (files: FileInfo[]) => Promise<T[]>,
-    options: StreamScanOptions = {}
+    options: StreamScanOptions = {},
   ): Promise<T[]> {
     const results: T[] = [];
     let batch: FileInfo[] = [];
@@ -223,7 +238,7 @@ export class StreamingFileScanner {
           const batchResults = await processor(batch);
           results.push(...batchResults);
         } catch (error) {
-          console.error('Error processing batch:', error);
+          console.error("Error processing batch:", error);
         }
         batch = []; // Clear batch
 
@@ -240,7 +255,7 @@ export class StreamingFileScanner {
         const batchResults = await processor(batch);
         results.push(...batchResults);
       } catch (error) {
-        console.error('Error processing final batch:', error);
+        console.error("Error processing final batch:", error);
       }
     }
 
@@ -252,7 +267,7 @@ export class StreamingFileScanner {
    */
   async *streamFilesIterator(
     paths: string[],
-    options: StreamScanOptions = {}
+    options: StreamScanOptions = {},
   ): AsyncGenerator<FileInfo, void, unknown> {
     for (const dirPath of paths) {
       yield* this.streamFiles(dirPath, options);
@@ -265,7 +280,7 @@ export class StreamingFileScanner {
    */
   createReadableStream(
     paths: string[],
-    options: StreamScanOptions = {}
+    options: StreamScanOptions = {},
   ): Readable {
     const self = this;
     let fileGenerator: AsyncGenerator<FileInfo, void, unknown> | null = null;
@@ -298,13 +313,13 @@ export class StreamingFileScanner {
    */
   async streamHashFile(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const crypto = require('crypto');
-      const hash = crypto.createHash('md5');
+      const crypto = require("crypto");
+      const hash = crypto.createHash("md5");
       const stream = fs.createReadStream(filePath);
 
-      stream.on('error', reject);
-      stream.on('data', (chunk: Buffer) => hash.update(chunk));
-      stream.on('end', () => resolve(hash.digest('hex')));
+      stream.on("error", reject);
+      stream.on("data", (chunk: Buffer) => hash.update(chunk));
+      stream.on("end", () => resolve(hash.digest("hex")));
     });
   }
 
@@ -316,9 +331,9 @@ export class StreamingFileScanner {
       const readStream = fs.createReadStream(sourcePath);
       const writeStream = fs.createWriteStream(destPath);
 
-      readStream.on('error', reject);
-      writeStream.on('error', reject);
-      writeStream.on('finish', resolve);
+      readStream.on("error", reject);
+      writeStream.on("error", reject);
+      writeStream.on("finish", resolve);
 
       readStream.pipe(writeStream);
     });
@@ -329,7 +344,7 @@ export class StreamingFileScanner {
    */
   async getStreamStats(
     paths: string[],
-    options: StreamScanOptions = {}
+    options: StreamScanOptions = {},
   ): Promise<ScanStats> {
     const startTime = Date.now();
     let filesScanned = 0;
@@ -361,7 +376,7 @@ export class StreamingFileScanner {
    * Check if path should be excluded
    */
   private shouldExclude(filePath: string, patterns: RegExp[]): boolean {
-    return patterns.some(pattern => pattern.test(filePath));
+    return patterns.some((pattern) => pattern.test(filePath));
   }
 
   /**
@@ -369,7 +384,7 @@ export class StreamingFileScanner {
    */
   async findDuplicatesStream(
     paths: string[],
-    options: StreamScanOptions = {}
+    options: StreamScanOptions = {},
   ): Promise<Map<string, FileInfo[]>> {
     const hashMap = new Map<string, FileInfo[]>();
     let processed = 0;
