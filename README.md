@@ -17,17 +17,20 @@ This project provides a complete UI architecture for building a professional sys
 ## 📁 Documentation Structure
 
 ### Core Architecture
+
 - [`architecture.md`](architecture.md) - Main architecture document with technology stack and component hierarchy
 - [`component-specifications.md`](component-specifications.md) - Detailed component specifications and interfaces
 - [`implementation-guide.md`](implementation-guide.md) - Step-by-step implementation guide with code examples
 - [`design-system.md`](design-system.md) - Visual design system with Mermaid diagrams
 
 ### Feature Analysis
+
 - [`docs/advanced-systemcare-features.md`](docs/advanced-systemcare-features.md) - Comprehensive analysis of Advanced SystemCare features
 
 ## 🏗️ Architecture Highlights
 
 ### Technology Stack
+
 - **Frontend**: React 18 + TypeScript + Tailwind CSS
 - **Desktop**: Electron 22 with secure IPC communication
 - **State Management**: Zustand for lightweight, performant state
@@ -36,6 +39,7 @@ This project provides a complete UI architecture for building a professional sys
 - **Animations**: Framer Motion for smooth transitions
 
 ### Component Architecture
+
 ```
 App
 ├── AppLayout
@@ -52,6 +56,7 @@ App
 ```
 
 ### Key Components
+
 - **HealthScoreGauge**: Circular gauge with animated transitions (0-100 score)
 - **SystemCard**: Reusable card component with status indicators
 - **ProgressIndicator**: Flexible progress bars with multiple variants
@@ -60,17 +65,20 @@ App
 ## 🎨 Design System
 
 ### Color Scheme
+
 - **Primary**: Blue (#3b82f6) - Main actions and branding
 - **Success**: Green (#22c55e) - Positive states and completion
 - **Warning**: Yellow (#f59e0b) - Warnings and attention needed
 - **Danger**: Red (#ef4444) - Errors and critical issues
 
 ### Typography
+
 - **Font Family**: Inter (system-ui fallback)
 - **Scale**: 8-point system from 12px to 40px
 - **Weights**: 400 (normal), 500 (medium), 600 (semibold), 700 (bold)
 
 ### Spacing
+
 - **Base Unit**: 4px increments
 - **Scale**: 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64px
 - **Layout**: Consistent padding and margin patterns
@@ -78,18 +86,21 @@ App
 ## 🚀 Implementation Features
 
 ### State Management
+
 - Global app state with Zustand
 - Persistence for user preferences
 - Real-time system data updates via Electron IPC
 - Type-safe interfaces throughout
 
 ### Theme System
+
 - CSS custom properties for consistent theming
 - Dark/light mode with system preference detection
 - Smooth transitions between themes
 - Persistent user theme selection
 
 ### Performance Optimization
+
 - Virtual scrolling for large lists
 - Debounced real-time updates
 - Lazy loading of module components
@@ -98,12 +109,14 @@ App
 ## 📱 Responsive Design
 
 ### Breakpoints
+
 - **Mobile**: < 768px (Bottom navigation)
 - **Tablet**: 768px - 1024px (Collapsible sidebar)
 - **Desktop**: 1024px - 1440px (Full sidebar)
 - **Large Desktop**: > 1440px (Expanded layout)
 
 ### Adaptive Layouts
+
 - Flexible grid systems (1-4 columns)
 - Responsive navigation patterns
 - Scalable component sizing
@@ -112,11 +125,13 @@ App
 ## 🔧 Development Setup
 
 ### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 - TypeScript 5.0+
 
 ### Quick Start
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -135,6 +150,7 @@ npm run electron:pack # Package for distribution
 ```
 
 ### Development Scripts
+
 - `npm run dev` - Start development server
 - `npm run electron:dev` - Start Electron in development
 - `npm run build` - Build for production
@@ -144,36 +160,42 @@ npm run electron:pack # Package for distribution
 ## 🎯 Module Specifications
 
 ### Dashboard Module
+
 - System health score gauge (0-100)
 - Real-time performance charts (CPU, Memory, Disk, Network)
 - Quick action buttons for common tasks
 - System information panel
 
 ### Clean Module
+
 - Junk file detection and cleanup
 - Registry cleaner with backup/restore
 - Privacy sweep for browsing traces
 - Custom clean options
 
 ### Optimize Module
+
 - Startup program management
 - RAM optimization and memory cleaning
 - Internet speed booster
 - System tweaks and optimizations
 
 ### Protect Module
+
 - Vulnerability and security scanner
 - Real-time protection monitoring
 - Browser protection settings
 - Security vulnerability analysis
 
 ### Speed Up Module
+
 - Game booster with profiles
 - Process manager for resource optimization
 - Performance monitoring with historical data
 - Turbo mode for maximum performance
 
 ### Toolbox Module
+
 - Software uninstaller with leftover cleanup
 - Driver updater with backup functionality
 - File management tools (split, join, encrypt)
@@ -182,18 +204,21 @@ npm run electron:pack # Package for distribution
 ## 🔒 Security & Best Practices
 
 ### Security Features
+
 - Context isolation in Electron
 - Secure IPC communication
 - No node integration in renderer
 - Preload script for safe API exposure
 
 ### Code Quality
+
 - TypeScript for type safety
 - ESLint and Prettier for code consistency
 - Husky hooks for pre-commit validation
 - Comprehensive testing strategy
 
 ### Accessibility
+
 - WCAG 2.1 AA compliance
 - Keyboard navigation support
 - Screen reader compatibility
@@ -202,6 +227,7 @@ npm run electron:pack # Package for distribution
 ## 📈 Future Enhancements
 
 ### Planned Features
+
 - AI-powered optimization suggestions
 - Cloud backup and sync
 - Multi-language support
@@ -209,6 +235,7 @@ npm run electron:pack # Package for distribution
 - Advanced reporting and analytics
 
 ### Technical Roadmap
+
 - WebAssembly for performance-critical operations
 - Service worker for background tasks
 - PWA capabilities for web version

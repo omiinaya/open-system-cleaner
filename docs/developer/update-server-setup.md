@@ -5,6 +5,7 @@ This guide explains how to configure automatic updates for OSC System Care using
 ## Overview
 
 OSC System Care uses `electron-updater` to automatically check for and download updates. The application is configured to use **GitHub Releases** as the update server, which is:
+
 - ✅ Free for open source projects
 - ✅ Reliable and globally distributed
 - ✅ Easy to set up
@@ -18,6 +19,7 @@ Ensure your repository is properly configured:
 
 1. **Repository must be public** (for free GitHub Releases)
 2. **Repository name** should match the configuration in `package.json`:
+
    ```json
    {
      "publish": {
@@ -55,6 +57,7 @@ To publish releases automatically from CI/CD, you need a GitHub token:
 **For Local Publishing:**
 
 Set environment variable:
+
 ```bash
 # Linux/macOS
 export GH_TOKEN=your_token_here
@@ -71,8 +74,9 @@ set GH_TOKEN=your_token_here
 The application automatically checks for updates on startup. You can configure this behavior:
 
 **In your application code** (electron/main.ts):
+
 ```typescript
-import { autoUpdater } from 'electron-updater';
+import { autoUpdater } from "electron-updater";
 
 // Configure update checking
 autoUpdater.checkForUpdatesAndNotify();
@@ -81,18 +85,19 @@ autoUpdater.checkForUpdatesAndNotify();
 autoUpdater.checkForUpdates();
 
 // Listen for update events
-autoUpdater.on('update-available', () => {
-  console.log('Update available');
+autoUpdater.on("update-available", () => {
+  console.log("Update available");
 });
 
-autoUpdater.on('update-downloaded', () => {
-  console.log('Update downloaded');
+autoUpdater.on("update-downloaded", () => {
+  console.log("Update downloaded");
   // Optionally auto-restart
   autoUpdater.quitAndInstall();
 });
 ```
 
 **Configuration options in package.json:**
+
 ```json
 {
   "build": {
@@ -112,6 +117,7 @@ autoUpdater.on('update-downloaded', () => {
 ### Manual Publishing
 
 1. **Update version** in `package.json`:
+
    ```json
    {
      "version": "1.0.1"
@@ -119,6 +125,7 @@ autoUpdater.on('update-downloaded', () => {
    ```
 
 2. **Build the application**:
+
    ```bash
    npm run build:all
    ```
@@ -151,6 +158,7 @@ git push origin main --tags
 ```
 
 The GitHub Actions workflow will:
+
 - Build for Windows, macOS, and Linux
 - Create a GitHub Release
 - Upload installer files
@@ -188,9 +196,10 @@ Release: v1.0.0
 electron-builder generates YAML files with update information:
 
 **latest.yml (Windows):**
+
 ```yaml
 version: 1.0.1
-releaseDate: '2026-02-06T12:00:00.000Z'
+releaseDate: "2026-02-06T12:00:00.000Z"
 path: OSC-System-Care-1.0.1-win-x64.exe
 sha512: abc123... (hash)
 ```
@@ -239,6 +248,7 @@ Note: JFrog Bintray was shut down in 2021. Use GitHub or S3 instead.
 **Cause:** The update metadata file wasn't uploaded to the release
 
 **Solution:**
+
 - Ensure `publishAutoUpdate: true` is set
 - Check that CI/CD uploaded all files
 - Manually upload `latest.yml` if needed
@@ -248,6 +258,7 @@ Note: JFrog Bintray was shut down in 2021. Use GitHub or S3 instead.
 **Cause:** Network issues or incorrect configuration
 
 **Solution:**
+
 - Check internet connection
 - Verify GitHub repository is accessible
 - Check browser console for detailed errors
@@ -258,6 +269,7 @@ Note: JFrog Bintray was shut down in 2021. Use GitHub or S3 instead.
 **Cause:** Code signing certificate issue (Windows/macOS)
 
 **Solution:**
+
 - For Windows: Configure code signing certificate
 - For macOS: Notarize the app
 - Or disable signature verification (not recommended for production):
@@ -274,6 +286,7 @@ Note: JFrog Bintray was shut down in 2021. Use GitHub or S3 instead.
 **Cause:** GitHub API rate limits or network issues
 
 **Solution:**
+
 - Check GitHub status
 - Add delay between update checks
 - Implement retry logic
@@ -283,6 +296,7 @@ Note: JFrog Bintray was shut down in 2021. Use GitHub or S3 instead.
 ### Code Signing
 
 **Windows:**
+
 - Purchase code signing certificate
 - Configure in package.json:
   ```json
@@ -295,6 +309,7 @@ Note: JFrog Bintray was shut down in 2021. Use GitHub or S3 instead.
   ```
 
 **macOS:**
+
 - Requires Apple Developer account
 - App must be notarized
 - Configure in package.json:
@@ -311,6 +326,7 @@ Note: JFrog Bintray was shut down in 2021. Use GitHub or S3 instead.
 ### Update Verification
 
 Always verify:
+
 1. ✅ HTTPS URLs (never HTTP)
 2. ✅ Checksum verification (SHA-512)
 3. ✅ Signature verification (when code signed)
@@ -321,6 +337,7 @@ Always verify:
 ### Test Update Flow Locally
 
 1. **Build current version:**
+
    ```bash
    npm version 1.0.0
    npm run build:all
@@ -331,12 +348,14 @@ Always verify:
 3. **Make a small change**
 
 4. **Build new version:**
+
    ```bash
    npm version 1.0.1
    npm run build:all
    ```
 
 5. **Publish to test channel:**
+
    ```bash
    electron-builder --publish always --config.publish.releaseType=prerelease
    ```
@@ -365,11 +384,13 @@ Users can opt-in to beta updates in settings.
 ### Version Numbering
 
 Follow Semantic Versioning (SemVer):
+
 - **MAJOR:** Breaking changes
 - **MINOR:** New features, backwards compatible
 - **PATCH:** Bug fixes
 
 Examples:
+
 - `1.0.0` → `1.0.1` (bug fix)
 - `1.0.1` → `1.1.0` (new feature)
 - `1.1.0` → `2.0.0` (breaking change)
@@ -381,15 +402,19 @@ Always include release notes:
 1. Go to GitHub Releases
 2. Edit the release
 3. Add description:
+
    ```markdown
    ## What's New
+
    - Feature A
    - Feature B
-   
+
    ## Bug Fixes
+
    - Fixed issue #123
-   
+
    ## Security
+
    - Updated dependencies
    ```
 
@@ -403,17 +428,20 @@ Always include release notes:
 ## Cost Analysis
 
 ### GitHub Releases (Recommended)
+
 - ✅ **Free** for public repositories
 - ✅ No bandwidth limits
 - ✅ Integrated with GitHub
 - ✅ Version control integration
 
 ### AWS S3 (Alternative)
+
 - 💰 ~$0.09/GB for storage
 - 💰 ~$0.09/GB for bandwidth
 - Example: 100MB app × 1000 downloads = ~$9/month
 
 ### Self-hosted Server
+
 - 💰 Server costs: $5-50/month
 - 💰 Bandwidth costs vary
 - ✅ Full control

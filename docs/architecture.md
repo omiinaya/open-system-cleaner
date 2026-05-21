@@ -1,11 +1,13 @@
 # UI Architecture: Open-Source Advanced SystemCare Alternative
 
 ## Project Overview
+
 A modern Electron application built with TypeScript and React, designed as an open-source alternative to Advanced SystemCare. The UI focuses on professional aesthetics, intuitive navigation, and real-time system monitoring.
 
 ## Technology Stack
 
 ### Core Technologies
+
 - **Electron**: Cross-platform desktop application framework
 - **TypeScript**: Type-safe JavaScript for better development experience
 - **React**: Component-based UI library with hooks
@@ -13,6 +15,7 @@ A modern Electron application built with TypeScript and React, designed as an op
 - **Vite**: Fast build tool and development server
 
 ### Additional Libraries
+
 - **React Router**: Client-side routing for navigation
 - **Zustand**: Lightweight state management
 - **Recharts**: Charting library for performance visualizations
@@ -48,6 +51,7 @@ src/
 ## Component Hierarchy
 
 ### Root Component Structure
+
 ```
 App
 ├── AppLayout
@@ -71,21 +75,25 @@ App
 ### Core Components
 
 #### 1. HealthScoreGauge
+
 - **Purpose**: Circular gauge showing system health score (0-100)
 - **Features**: Animated transitions, color-coded segments, real-time updates
 - **Props**: `score`, `size`, `showLabel`, `animate`
 
 #### 2. SystemCard
+
 - **Purpose**: Card-based layout for feature modules
 - **Features**: Hover effects, status indicators, action buttons
 - **Variants**: Info, Warning, Success, Danger
 
 #### 3. ProgressIndicator
+
 - **Purpose**: Visual feedback for scan and optimization processes
 - **Features**: Progress bar, percentage display, estimated time
 - **Types**: Linear, Circular, Stepped
 
 #### 4. PerformanceChart
+
 - **Purpose**: Real-time performance monitoring charts
 - **Features**: CPU, Memory, Disk, Network metrics
 - **Config**: Time range, refresh intervals
@@ -93,28 +101,30 @@ App
 ## State Management
 
 ### Global State Structure
+
 ```typescript
 interface AppState {
   // System Information
   systemInfo: SystemInfo;
   healthScore: number;
-  
+
   // Module States
   currentModule: ModuleType;
   scanProgress: ScanProgress;
   optimizationStatus: OptimizationStatus;
-  
+
   // UI State
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   sidebarCollapsed: boolean;
   notifications: Notification[];
-  
+
   // Settings
   userPreferences: UserPreferences;
 }
 ```
 
 ### State Management Strategy
+
 - **Zustand**: Lightweight state management with minimal boilerplate
 - **Local State**: Component-level state for UI interactions
 - **Persistence**: Save user preferences and settings to local storage
@@ -123,46 +133,48 @@ interface AppState {
 ## Styling Strategy
 
 ### Tailwind CSS Configuration
+
 ```javascript
 // tailwind.config.js
 module.exports = {
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
-  darkMode: 'class',
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         primary: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+          50: "#eff6ff",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
         },
         success: {
-          50: '#f0fdf4',
-          500: '#22c55e',
-          600: '#16a34a',
+          50: "#f0fdf4",
+          500: "#22c55e",
+          600: "#16a34a",
         },
         warning: {
-          50: '#fffbeb',
-          500: '#f59e0b',
-          600: '#d97706',
+          50: "#fffbeb",
+          500: "#f59e0b",
+          600: "#d97706",
         },
         danger: {
-          50: '#fef2f2',
-          500: '#ef4444',
-          600: '#dc2626',
-        }
+          50: "#fef2f2",
+          500: "#ef4444",
+          600: "#dc2626",
+        },
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      }
+        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
     },
   },
   plugins: [],
-}
+};
 ```
 
 ### CSS Architecture
+
 - **Utility-First**: Use Tailwind classes for rapid development
 - **Component Styles**: CSS Modules for complex component styling
 - **Design System**: Consistent spacing, typography, and colors
@@ -171,6 +183,7 @@ module.exports = {
 ## Theme System
 
 ### Light Theme
+
 ```css
 :root {
   --bg-primary: #ffffff;
@@ -182,6 +195,7 @@ module.exports = {
 ```
 
 ### Dark Theme
+
 ```css
 .dark {
   --bg-primary: #0f172a;
@@ -193,6 +207,7 @@ module.exports = {
 ```
 
 ### Theme Implementation
+
 - **CSS Custom Properties**: Theme variables for consistency
 - **Class-based Toggle**: `dark` class on root element
 - **System Preference**: Auto-detect system theme
@@ -201,6 +216,7 @@ module.exports = {
 ## Screen Designs
 
 ### 1. Dashboard/Overview
+
 ```
 Dashboard Layout:
 ┌─────────────────────────────────────────┐
@@ -214,6 +230,7 @@ Dashboard Layout:
 ```
 
 ### 2. Clean Module
+
 ```
 Clean Module Layout:
 ┌─────────────────────────────────────────┐
@@ -227,6 +244,7 @@ Clean Module Layout:
 ```
 
 ### 3. Optimize Module
+
 ```
 Optimize Module Layout:
 ┌─────────────────────────────────────────┐
@@ -240,6 +258,7 @@ Optimize Module Layout:
 ```
 
 ### 4. Protect Module
+
 ```
 Protect Module Layout:
 ┌─────────────────────────────────────────┐
@@ -253,6 +272,7 @@ Protect Module Layout:
 ```
 
 ### 5. Speed Up Module
+
 ```
 Speed Up Module Layout:
 ┌─────────────────────────────────────────┐
@@ -266,6 +286,7 @@ Speed Up Module Layout:
 ```
 
 ### 6. Toolbox Module
+
 ```
 Toolbox Module Layout:
 ┌─────────────────────────────────────────┐
@@ -281,6 +302,7 @@ Toolbox Module Layout:
 ## Navigation Structure
 
 ### Sidebar Navigation
+
 ```
 Navigation Items:
 - 🏠 Dashboard
@@ -293,6 +315,7 @@ Navigation Items:
 ```
 
 ### Navigation Features
+
 - **Icon + Label**: Clear visual hierarchy
 - **Active State**: Highlight current module
 - **Collapsible**: Space-saving option
@@ -301,69 +324,73 @@ Navigation Items:
 ## Design Tokens
 
 ### Color Scheme
+
 ```typescript
 const colors = {
   primary: {
-    blue: '#3b82f6',    // Primary actions
-    green: '#22c55e',   // Success states
-    yellow: '#f59e0b',  // Warnings
-    red: '#ef4444',     // Errors/danger
+    blue: "#3b82f6", // Primary actions
+    green: "#22c55e", // Success states
+    yellow: "#f59e0b", // Warnings
+    red: "#ef4444", // Errors/danger
   },
   neutral: {
-    50: '#f8fafc',
-    100: '#f1f5f9',
+    50: "#f8fafc",
+    100: "#f1f5f9",
     // ... up to 900
-  }
-}
+  },
+};
 ```
 
 ### Typography Scale
+
 ```typescript
 const typography = {
   fontSize: {
-    xs: '0.75rem',
-    sm: '0.875rem',
-    base: '1rem',
-    lg: '1.125rem',
-    xl: '1.25rem',
-    '2xl': '1.5rem',
-    '3xl': '1.875rem',
+    xs: "0.75rem",
+    sm: "0.875rem",
+    base: "1rem",
+    lg: "1.125rem",
+    xl: "1.25rem",
+    "2xl": "1.5rem",
+    "3xl": "1.875rem",
   },
   fontWeight: {
     normal: 400,
     medium: 500,
     semibold: 600,
     bold: 700,
-  }
-}
+  },
+};
 ```
 
 ### Spacing System
+
 ```typescript
 const spacing = {
-  0: '0px',
-  1: '0.25rem',
-  2: '0.5rem',
-  3: '0.75rem',
-  4: '1rem',
-  5: '1.25rem',
-  6: '1.5rem',
-  8: '2rem',
-  10: '2.5rem',
-  12: '3rem',
-  16: '4rem',
-}
+  0: "0px",
+  1: "0.25rem",
+  2: "0.5rem",
+  3: "0.75rem",
+  4: "1rem",
+  5: "1.25rem",
+  6: "1.5rem",
+  8: "2rem",
+  10: "2.5rem",
+  12: "3rem",
+  16: "4rem",
+};
 ```
 
 ## Component Specifications
 
 ### HealthScoreGauge Component
+
 ```typescript
 interface HealthScoreGaugeProps {
-  score: number;           // 0-100 health score
-  size?: 'sm' | 'md' | 'lg';
-  showLabel?: boolean;     // Show percentage label
-  animate?: boolean;       // Smooth animation
+  score: number; // 0-100 health score
+  size?: "sm" | "md" | "lg";
+  showLabel?: boolean; // Show percentage label
+  animate?: boolean; // Smooth animation
   className?: string;
 }
 
@@ -374,32 +401,36 @@ interface HealthScoreGaugeProps {
 ```
 
 ### SystemCard Component
+
 ```typescript
 interface SystemCardProps {
   title: string;
   description?: string;
-  status?: 'idle' | 'scanning' | 'success' | 'warning' | 'error';
-  progress?: number;       // 0-100 for progress bars
+  status?: "idle" | "scanning" | "success" | "warning" | "error";
+  progress?: number; // 0-100 for progress bars
   actions?: CardAction[];
-  variant?: 'default' | 'info' | 'warning' | 'success' | 'danger';
+  variant?: "default" | "info" | "warning" | "success" | "danger";
 }
 ```
 
 ## Implementation Guidelines
 
 ### Performance Considerations
+
 - **Virtual Scrolling**: For large lists (process manager, file lists)
 - **Debounced Updates**: Real-time charts and monitoring
 - **Lazy Loading**: Module-specific components
 - **Memory Management**: Clean up event listeners and intervals
 
 ### Accessibility Features
+
 - **Keyboard Navigation**: Full keyboard support
 - **Screen Readers**: ARIA labels and roles
 - **Color Contrast**: WCAG 2.1 AA compliance
 - **Focus Management**: Logical tab order
 
 ### Error Handling
+
 - **Graceful Degradation**: Fallback UI for system errors
 - **User Feedback**: Clear error messages and recovery options
 - **Logging**: Error tracking and reporting
@@ -407,6 +438,7 @@ interface SystemCardProps {
 ## Development Workflow
 
 ### Component Development
+
 1. Create component with TypeScript interfaces
 2. Implement with Tailwind CSS styling
 3. Add accessibility attributes
@@ -414,12 +446,14 @@ interface SystemCardProps {
 5. Document usage examples
 
 ### Theme Development
+
 1. Define design tokens
 2. Implement CSS custom properties
 3. Test both light and dark themes
 4. Ensure consistency across components
 
 ### State Management
+
 1. Define state interfaces
 2. Create Zustand stores
 3. Implement data persistence

@@ -3,6 +3,7 @@
 Solutions to common issues and problems you might encounter while using OSC System Care.
 
 ## Table of Contents
+
 1. [Installation Issues](#installation-issues)
 2. [Application Won't Start](#application-wont-start)
 3. [Performance Issues](#performance-issues)
@@ -21,6 +22,7 @@ Solutions to common issues and problems you might encounter while using OSC Syst
 ### Issue: Installation Fails or Freezes
 
 **Symptoms:**
+
 - Installer stops responding
 - Error during installation
 - Installation rolls back
@@ -41,6 +43,7 @@ Solutions to common issues and problems you might encounter while using OSC Syst
    - Re-enable after installation completes
 
 4. **Clear Temp Files**
+
    ```
    Windows: Delete contents of %temp% folder
    macOS: Delete contents of /tmp folder
@@ -55,6 +58,7 @@ Solutions to common issues and problems you might encounter while using OSC Syst
 ### Issue: Missing Dependencies
 
 **Symptoms:**
+
 - "DLL not found" errors (Windows)
 - Library dependency errors (Linux)
 - Framework installation prompts
@@ -62,6 +66,7 @@ Solutions to common issues and problems you might encounter while using OSC Syst
 **Solutions:**
 
 **Windows:**
+
 1. Install Visual C++ Redistributables:
    - Download from Microsoft website
    - Install both x86 and x64 versions
@@ -70,10 +75,12 @@ Solutions to common issues and problems you might encounter while using OSC Syst
 2. Install .NET Framework (if prompted)
 
 **macOS:**
+
 - Usually no additional dependencies needed
 - If issues persist, update macOS to latest version
 
 **Linux:**
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install -f
@@ -92,6 +99,7 @@ sudo pacman -S <missing-package>
 ### Issue: App Crashes on Launch
 
 **Symptoms:**
+
 - Splash screen appears then closes
 - Error dialog on startup
 - Blank window
@@ -104,11 +112,13 @@ sudo pacman -S <missing-package>
    - Check disk space
 
 2. **Clear App Data**
+
    ```
    Windows: %APPDATA%\OSC System Care
    macOS: ~/Library/Application Support/OSC System Care
    Linux: ~/.config/osc-system-care
    ```
+
    - Rename or delete this folder
    - App will recreate on next launch
    - Note: You'll lose settings
@@ -129,6 +139,7 @@ sudo pacman -S <missing-package>
 ### Issue: App Hangs or Freezes
 
 **Symptoms:**
+
 - Application becomes unresponsive
 - Spinning cursor
 - "Not Responding" in title bar
@@ -166,6 +177,7 @@ sudo pacman -S <missing-package>
 ### Issue: System Slower After Using OSC
 
 **Symptoms:**
+
 - Computer slower than before
 - High CPU usage
 - Applications taking longer to load
@@ -199,6 +211,7 @@ sudo pacman -S <missing-package>
 ### Issue: High CPU/Memory Usage by OSC
 
 **Symptoms:**
+
 - OSC using excessive resources
 - System sluggish during scans
 - Fan running constantly
@@ -237,6 +250,7 @@ sudo pacman -S <missing-package>
 ### Issue: Scan Never Completes
 
 **Symptoms:**
+
 - Scan stuck at certain percentage
 - No progress for long time
 - Scan runs indefinitely
@@ -271,6 +285,7 @@ sudo pacman -S <missing-package>
 ### Issue: False Positives
 
 **Symptoms:**
+
 - Important files flagged as junk
 - Legitimate programs marked as threats
 - Clean items shown as issues
@@ -304,6 +319,7 @@ sudo pacman -S <missing-package>
 ### Issue: Cannot Delete Certain Files
 
 **Symptoms:**
+
 - "Access Denied" errors
 - Files remain after cleaning
 - Permission errors
@@ -339,6 +355,7 @@ sudo pacman -S <missing-package>
 ### Issue: System Unstable After Cleaning
 
 **Symptoms:**
+
 - Programs won't start
 - System errors
 - Missing functionality
@@ -377,6 +394,7 @@ sudo pacman -S <missing-package>
 ### Issue: Update Fails to Download
 
 **Symptoms:**
+
 - "Download failed" message
 - Update stuck at 0%
 - Network error during update
@@ -411,6 +429,7 @@ sudo pacman -S <missing-package>
 ### Issue: Update Installed but Version Unchanged
 
 **Symptoms:**
+
 - Still shows old version number
 - New features not available
 - Update keeps prompting
@@ -447,6 +466,7 @@ sudo pacman -S <missing-package>
 ### Issue: "Access Denied" or Permission Errors
 
 **Symptoms:**
+
 - Cannot scan certain folders
 - Cannot clean protected files
 - UAC prompts repeatedly
@@ -486,6 +506,7 @@ sudo pacman -S <missing-package>
 **Linux:**
 
 1. **Run with sudo**
+
    ```bash
    sudo osc-system-care
    ```
@@ -495,6 +516,7 @@ sudo pacman -S <missing-package>
    sudo usermod -aG disk $USER
    sudo usermod -aG adm $USER
    ```
+
    - Log out and back in
 
 ---
@@ -506,6 +528,7 @@ sudo pacman -S <missing-package>
 **Issue: Windows Defender Blocks OSC**
 
 **Solution:**
+
 1. Windows Security → Virus & threat protection
 2. Virus & threat protection settings → Manage settings
 3. Add or remove exclusions
@@ -514,6 +537,7 @@ sudo pacman -S <missing-package>
 **Issue: SmartScreen Warning**
 
 **Solution:**
+
 1. Click "More info" on warning
 2. Click "Run anyway"
 3. Or right-click installer → Properties
@@ -522,6 +546,7 @@ sudo pacman -S <missing-package>
 **Issue: .NET Framework Errors**
 
 **Solution:**
+
 1. Download .NET 6.0 Runtime
 2. Install and restart
 3. Try launching OSC again
@@ -531,6 +556,7 @@ sudo pacman -S <missing-package>
 **Issue: "App is damaged" Warning**
 
 **Solution:**
+
 1. System Preferences → Security & Privacy
 2. Click "Open Anyway"
 3. Or use terminal:
@@ -541,6 +567,7 @@ sudo pacman -S <missing-package>
 **Issue: Cannot Find Apps to Uninstall**
 
 **Solution:**
+
 1. Grant Full Disk Access (see above)
 2. Check Applications folder permissions
 3. Try running with elevated permissions
@@ -548,6 +575,7 @@ sudo pacman -S <missing-package>
 **Issue: Time Machine Issues**
 
 **Solution:**
+
 1. Exclude OSC from Time Machine
 2. Settings → Privacy → Time Machine
 3. Or add to exclusions in Time Machine preferences
@@ -557,6 +585,7 @@ sudo pacman -S <missing-package>
 **Issue: Package Manager Errors**
 
 **Solution:**
+
 ```bash
 # Fix broken packages
 sudo apt-get --fix-broken install  # Debian/Ubuntu
@@ -567,6 +596,7 @@ sudo pacman -Syu                   # Arch
 **Issue: AppImage Won't Run**
 
 **Solution:**
+
 ```bash
 chmod +x OSC-System-Care-*.AppImage
 ./OSC-System-Care-*.AppImage
@@ -575,6 +605,7 @@ chmod +x OSC-System-Care-*.AppImage
 **Issue: Missing Libraries**
 
 **Solution:**
+
 ```bash
 # Check dependencies
 ldd /usr/bin/osc-system-care
@@ -589,42 +620,52 @@ sudo apt-get install libgtk-3-0 libnotify4 libnss3
 ### Common Error Codes and Solutions
 
 **Error 1001: Scan Timeout**
+
 - **Cause:** Scan taking too long
 - **Solution:** Reduce scan scope, increase timeout in settings
 
 **Error 1002: Permission Denied**
+
 - **Cause:** Insufficient privileges
 - **Solution:** Run as administrator/root
 
 **Error 1003: File In Use**
+
 - **Cause:** File locked by another process
 - **Solution:** Close other applications, restart
 
 **Error 1004: Disk Full**
+
 - **Cause:** No space for operations
 - **Solution:** Free up disk space
 
 **Error 1005: Network Error**
+
 - **Cause:** Cannot reach update server
 - **Solution:** Check internet, firewall, proxy settings
 
 **Error 1006: Backup Failed**
+
 - **Cause:** Cannot create backup
 - **Solution:** Check backup location permissions, disk space
 
 **Error 1007: Registry Error (Windows)**
+
 - **Cause:** Cannot access/modify registry
 - **Solution:** Run as administrator, check antivirus
 
 **Error 1008: Update Failed**
+
 - **Cause:** Update download or install failed
 - **Solution:** Manual download, check permissions
 
 **Error 1009: Database Error**
+
 - **Cause:** Internal database corruption
 - **Solution:** Clear app data, reinstall
 
 **Error 1010: Worker Thread Error**
+
 - **Cause:** Multi-threading issue
 - **Solution:** Reduce worker threads in settings
 
@@ -635,12 +676,15 @@ sudo apt-get install libgtk-3-0 libnotify4 libnss3
 If issues persist after trying these solutions:
 
 ### 1. Check Documentation
+
 - [Getting Started Guide](./getting-started.md)
 - [Feature Guide](./features.md)
 - [FAQ](./faq.md)
 
 ### 2. Collect Information
+
 Before contacting support, gather:
+
 - OSC version number (Help → About)
 - Operating system and version
 - Error messages (screenshots)
@@ -648,17 +692,21 @@ Before contacting support, gather:
 - Steps to reproduce the issue
 
 ### 3. Community Support
+
 - **GitHub Issues:** github.com/yourusername/osc-system-care/issues
 - **Discussions:** GitHub Discussions forum
 - **Community Forum:** [Link to community forum]
 
 ### 4. Contact Support
+
 - **Email:** support@osc-system-care.com
 - **Response Time:** 24-48 hours
 - **Include:** All information collected above
 
 ### 5. Report Bug
+
 Use the in-app feedback:
+
 1. Help → Report a Bug
 2. Fill out the form
 3. Include logs
