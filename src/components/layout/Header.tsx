@@ -9,6 +9,17 @@ export interface HeaderProps {
   className?: string;
 }
 
+// Electron API types
+declare global {
+  interface Window {
+    electronAPI?: {
+      minimizeWindow: () => void;
+      maximizeWindow: () => void;
+      closeWindow: () => void;
+    };
+  }
+}
+
 const Header: React.FC<HeaderProps> = ({
   title,
   showWindowControls = false,
@@ -17,87 +28,61 @@ const Header: React.FC<HeaderProps> = ({
   const { isDark, toggleTheme } = useThemeStore();
 
   const handleMinimize = () => {
-    if (typeof window !== "undefined" && (window as any).electronAPI) {
-      (window as any).electronAPI.minimizeWindow();
+    if (typeof window !== "undefined" && window.electronAPI) {
+      window.electronAPI.minimizeWindow();
     }
   };
 
   const handleMaximize = () => {
-    if (typeof window !== "undefined" && (window as any).electronAPI) {
-      (window as any).electronAPI.maximizeWindow();
+    if (typeof window !== "undefined" && window.electronAPI) {
+      window.electronAPI.maximizeWindow();
     }
   };
 
   const handleClose = () => {
-    if (typeof window !== "undefined" && (window as any).electronAPI) {
-      (window as any).electronAPI.closeWindow();
+    if (typeof window !== "undefined" && window.electronAPI) {
+      window.electronAPI.closeWindow();
     }
   };
 
   return (
     <header
       className={cn(
-        "h-16 bg-bg-primary border-b border-border flex items-center justify-between px-6",
+        "flex items-center justify-between px-4 py-2 bg-bg-primary border-b border-border select-none drag",
         className,
       )}
     >
-      {/* Left: Title */}
-      <div className="flex items-center gap-4">
-        <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
-      </div>
-
-      {/* Right: Actions */}
+      <h1 className="text-sm font-semibold text-text-primary">{title}</h1>
       <div className="flex items-center gap-2">
-        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className={cn(
-            "p-2 rounded-lg transition-all duration-200",
-            "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
-            "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
-            "dark:focus:ring-offset-bg-primary",
-          )}
-          title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          className="p-1.5 rounded-md hover:bg-bg-secondary text-text-secondary hover:text-text-primary transition-colors no-drag cursor-pointer"
+          aria-label="Toggle theme"
         >
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-
-        {/* Window Controls (Electron) */}
         {showWindowControls && (
-          <div className="flex items-center gap-1 ml-4 pl-4 border-l border-border">
+          <div className="flex items-center gap-1 no-drag ml-2">
             <button
               onClick={handleMinimize}
-              className={cn(
-                "p-2 rounded-lg transition-all duration-200",
-                "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
-              )}
-              title="Minimize"
-              aria-label="Minimize window"
+              className="p-1.5 rounded-md hover:bg-bg-secondary text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+              aria-label="Minimize"
             >
-              <Minus className="w-4 h-4" />
+              <Minus size={14} />
             </button>
             <button
               onClick={handleMaximize}
-              className={cn(
-                "p-2 rounded-lg transition-all duration-200",
-                "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
-              )}
-              title="Maximize"
-              aria-label="Maximize window"
+              className="p-1.5 rounded-md hover:bg-bg-secondary text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+              aria-label="Maximize"
             >
-              <Square className="w-4 h-4" />
+              <Square size={12} />
             </button>
             <button
               onClick={handleClose}
-              className={cn(
-                "p-2 rounded-lg transition-all duration-200",
-                "text-text-secondary hover:text-white hover:bg-danger-500",
-              )}
-              title="Close"
-              aria-label="Close window"
+              className="p-1.5 rounded-md hover:bg-red-500/10 text-text-secondary hover:text-red-500 transition-colors cursor-pointer"
+              aria-label="Close"
             >
-              <X className="w-4 h-4" />
+              <X size={14} />
             </button>
           </div>
         )}

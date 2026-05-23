@@ -1,4 +1,5 @@
-import * as fs from "fs/promises";
+import type { Stats } from "node:fs";
+import * as fs from "node:fs/promises";
 import * as path from "path";
 import * as crypto from "crypto";
 
@@ -98,8 +99,8 @@ export class DuplicateFinderService {
     paths: string[],
     extensions: string[] | undefined,
     onProgress?: (progress: number, currentFile: string) => void,
-  ): Promise<{ path: string; name: string; size: number; stats: any }[]> {
-    const files: { path: string; name: string; size: number; stats: any }[] =
+  ): Promise<{ path: string; name: string; size: number; stats: Stats }[]> {
+    const files: { path: string; name: string; size: number; stats: Stats }[] =
       [];
     let processed = 0;
 
@@ -119,7 +120,7 @@ export class DuplicateFinderService {
   private async findFilesRecursive(
     dirPath: string,
     extensions: string[] | undefined,
-    files: { path: string; name: string; size: number; stats: any }[],
+    files: { path: string; name: string; size: number; stats: Stats }[],
     depth: number,
     maxDepth: number = 5,
   ): Promise<void> {
@@ -196,11 +197,11 @@ export class DuplicateFinderService {
   }
 
   private groupBySize(
-    files: { path: string; name: string; size: number; stats: any }[],
-  ): Map<number, { path: string; name: string; size: number; stats: any }[]> {
+    files: { path: string; name: string; size: number; stats: Stats }[],
+  ): Map<number, { path: string; name: string; size: number; stats: Stats }[]> {
     const groups = new Map<
       number,
-      { path: string; name: string; size: number; stats: any }[]
+      { path: string; name: string; size: number; stats: Stats }[]
     >();
 
     for (const file of files) {
@@ -222,15 +223,15 @@ export class DuplicateFinderService {
   private async hashFiles(
     sizeGroups: Map<
       number,
-      { path: string; name: string; size: number; stats: any }[]
+      { path: string; name: string; size: number; stats: Stats }[]
     >,
     onProgress?: (progress: number, currentFile: string) => void,
   ): Promise<
-    Map<string, { path: string; name: string; size: number; stats: any }[]>
+    Map<string, { path: string; name: string; size: number; stats: Stats }[]>
   > {
     const hashGroups = new Map<
       string,
-      { path: string; name: string; size: number; stats: any }[]
+      { path: string; name: string; size: number; stats: Stats }[]
     >();
     let processed = 0;
     let totalFiles = 0;

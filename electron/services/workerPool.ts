@@ -31,9 +31,9 @@ export class WorkerPool {
   private workers: Worker[] = [];
   private taskQueue: Array<{
     id: string;
-    data: any;
-    resolve: (value: any) => void;
-    reject: (reason: any) => void;
+    data: unknown;
+    resolve: (value: unknown) => void;
+    reject: (reason: unknown) => void;
     timestamp: number;
   }> = [];
   private busyWorkers = new Map<Worker, boolean>();
@@ -68,7 +68,7 @@ export class WorkerPool {
   private createWorker(): Worker {
     const worker = new Worker(this.workerScript);
 
-    worker.on("message", (result: WorkerResult<any>) => {
+    worker.on("message", (result: WorkerResult<unknown>) => {
       this.handleWorkerMessage(worker, result);
     });
 
@@ -108,7 +108,7 @@ export class WorkerPool {
   /**
    * Handle messages from workers
    */
-  private handleWorkerMessage(worker: Worker, result: WorkerResult<any>): void {
+  private handleWorkerMessage(worker: Worker, result: WorkerResult<unknown>): void {
     const task = this.taskQueue.find((t) => t.id === result.taskId);
     if (task) {
       if (result.error) {
@@ -223,7 +223,7 @@ export class WorkerPool {
           })
           .catch((error) => {
             errors[i + index] = error;
-            results[i + index] = null as any;
+            results[i + index] = null as unknown;
           }),
       );
 

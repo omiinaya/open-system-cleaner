@@ -177,7 +177,12 @@ export class SystemRestoreService {
         ? restorePoints
         : [restorePoints];
 
-      return pointsArray.map((rp: any) => ({
+      return (pointsArray as Array<{
+        SequenceNumber: number;
+        Description: string;
+        RestorePointType: number;
+        CreationTime: string;
+      }>).map((rp) => ({
         sequenceNumber: rp.SequenceNumber,
         description: rp.Description,
         type: this.getRestorePointTypeName(rp.RestorePointType),

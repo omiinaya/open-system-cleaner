@@ -90,12 +90,25 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
   }, [initialData]);
 
   // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
+// Recharts tooltip types
+interface TooltipPayloadEntry {
+  color?: string;
+  name?: string;
+  value?: number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-bg-secondary border border-border rounded-lg p-3 shadow-lg">
           <p className="text-text-secondary text-xs mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry: TooltipPayloadEntry, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm">
               <span
                 className="w-2 h-2 rounded-full"

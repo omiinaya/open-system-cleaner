@@ -292,7 +292,7 @@ export class StartupManagerService {
   /**
    * Parse a plist file to extract information
    */
-  private async parsePlistFile(plistPath: string): Promise<any> {
+  private async parsePlistFile(plistPath: string): Promise<Record<string, string | number | boolean>> {
     try {
       // Use plutil to convert plist to JSON
       const { stdout } = await execAsync(
@@ -308,7 +308,7 @@ export class StartupManagerService {
   /**
    * Extract publisher from plist info
    */
-  private extractPublisherFromPlist(plistInfo: any): string {
+  private extractPublisherFromPlist(plistInfo: Record<string, string | number | boolean | undefined>): string {
     // Try to extract from various plist fields
     if (plistInfo.CFBundleIdentifier) {
       const parts = plistInfo.CFBundleIdentifier.split(".");
@@ -322,7 +322,7 @@ export class StartupManagerService {
   /**
    * Calculate impact for macOS launch agents
    */
-  private calculateMacImpact(plistInfo: any): "low" | "medium" | "high" {
+  private calculateMacImpact(plistInfo: Record<string, string | number | boolean | undefined>): "low" | "medium" | "high" {
     // Check for high impact indicators
     if (plistInfo.KeepAlive === true) {
       return "high";

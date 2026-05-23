@@ -142,7 +142,7 @@ export class BehavioralAnalyzer {
   /**
    * Update behavior history for a process
    */
-  private updateHistory(behavior: ProcessBehavior, proc: any): void {
+  private updateHistory(behavior: ProcessBehavior, proc: Systeminformation.ProcessesProcessData): void {
     // CPU history
     behavior.cpuHistory.push(proc.cpu);
     if (behavior.cpuHistory.length > this.HISTORY_LENGTH) {

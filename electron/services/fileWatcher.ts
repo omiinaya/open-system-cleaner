@@ -1,3 +1,4 @@
+import type { Stats } from "node:fs";
 import { watch, FSWatcher } from "chokidar";
 import * as path from "path";
 import { auditLogger } from "./auditLogger";
@@ -5,7 +6,7 @@ import { auditLogger } from "./auditLogger";
 export interface FileWatchEvent {
   type: "add" | "change" | "unlink" | "addDir" | "unlinkDir";
   path: string;
-  stats?: any;
+  stats?: Stats;
   timestamp: number;
 }
 
@@ -128,7 +129,7 @@ export class FileWatcherService {
   private handleEvent(
     type: FileWatchEvent["type"],
     filePath: string,
-    stats?: any,
+    stats?: Stats,
   ): void {
     const event: FileWatchEvent = {
       type,

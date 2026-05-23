@@ -5,7 +5,7 @@ import type { ProcessInfo } from "../services/ramOptimizer";
 /**
  * Type guard for ScanResult
  */
-export function isValidScanResult(obj: any): obj is ScanResult {
+export function isValidScanResult(obj: unknown): obj is ScanResult {
   return (
     obj &&
     typeof obj === "object" &&
@@ -18,7 +18,7 @@ export function isValidScanResult(obj: any): obj is ScanResult {
 /**
  * Type guard for SystemMetrics
  */
-export function isValidSystemMetrics(obj: any): obj is SystemMetrics {
+export function isValidSystemMetrics(obj: unknown): obj is SystemMetrics {
   return (
     obj &&
     typeof obj === "object" &&
@@ -36,7 +36,7 @@ export function isValidSystemMetrics(obj: any): obj is SystemMetrics {
 /**
  * Type guard for ProcessInfo array
  */
-export function isValidProcessInfoArray(obj: any): obj is ProcessInfo[] {
+export function isValidProcessInfoArray(obj: unknown): obj is ProcessInfo[] {
   return (
     Array.isArray(obj) &&
     obj.every(
@@ -51,7 +51,7 @@ export function isValidProcessInfoArray(obj: any): obj is ProcessInfo[] {
 /**
  * Type guard for string array
  */
-export function isValidStringArray(obj: any): obj is string[] {
+export function isValidStringArray(obj: unknown): obj is string[] {
   return Array.isArray(obj) && obj.every((item) => typeof item === "string");
 }
 
@@ -73,7 +73,7 @@ export function sanitizeFilePath(filePath: string): string {
 /**
  * Validate that an array is non-empty
  */
-export function isNonEmptyArray<T>(obj: any): obj is T[] {
+export function isNonEmptyArray<T>(obj: unknown): obj is T[] {
   return Array.isArray(obj) && obj.length > 0;
 }
 

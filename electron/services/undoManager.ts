@@ -10,7 +10,7 @@ export interface UndoableAction {
   module: string;
   undo: () => Promise<void>;
   redo: () => Promise<void>;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface SerializedAction {
@@ -19,7 +19,7 @@ export interface SerializedAction {
   description: string;
   module: string;
   actionType: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export class UndoManager {
@@ -45,7 +45,7 @@ export class UndoManager {
     action: () => Promise<T>,
     undo: () => Promise<void>,
     redo: () => Promise<void>,
-    metadata: Record<string, any> = {},
+    metadata: Record<string, unknown> = {},
   ): Promise<T> {
     const result = await action();
 

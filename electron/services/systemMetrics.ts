@@ -52,7 +52,7 @@ export class SystemMetricsService {
   private consecutiveIdleChecks = 0;
 
   // Caching
-  private cache = new Map<string, { value: any; timestamp: number }>();
+  private cache = new Map<string, { value: unknown; timestamp: number }>();
   private readonly CACHE_TTL = CONSTANTS.CACHE_TTL_MS;
 
   /**
@@ -160,7 +160,7 @@ export class SystemMetricsService {
       ]);
 
       const cpuInfo = os.cpus()[0];
-      const drives = fsSize.map((drive: any) => ({
+      const drives = fsSize.map((drive: Systeminformation.FsSizeData) => ({
         letter: drive.fs,
         label: drive.fs,
         total: drive.size,

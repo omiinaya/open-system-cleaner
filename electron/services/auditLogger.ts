@@ -8,7 +8,7 @@ export interface AuditEntry {
   action: string;
   module: string;
   status: "success" | "failure" | "warning";
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   userId?: string;
 }
 
@@ -40,7 +40,7 @@ export class AuditLogger {
     action: string,
     module: string,
     status: "success" | "failure" | "warning",
-    details: Record<string, any> = {},
+    details: Record<string, unknown> = {},
   ): Promise<void> {
     const entry: AuditEntry = {
       id: this.generateId(),

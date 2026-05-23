@@ -224,7 +224,7 @@ export class UpdateManager {
   /**
    * Notify renderer process of update events
    */
-  private notifyRenderer(channel: string, data: any): void {
+  private notifyRenderer(channel: string, data: UpdateInfo | UpdateProgress | { error: string }): void {
     // This would typically send to renderer via IPC
     // For now, just log it
     log.info(`[Renderer Notification] ${channel}:`, data);
